@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#050505" />
+  <title>Infodose ViViVi — Quiz dos Arquétipos</title>
+
+  <!-- ============ CDNs / Webkits usados ============
+       - Tailwind CSS (via CDN) for rapid mobile-first styling
+         https://cdn.tailwindcss.com
+       - Google Fonts: Inter + JetBrains Mono
+         (UI + monospaced data/brand text)
+       - Lucide icons (cdn.jsdelivr) for crisp SVG icons
+       - Animate On Scroll (AOS) for small gestures (optional)
+       - No heavy JS frameworks — vanilla JS for portability
+     =============================================== -->
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/lucide.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#06060a; --card:#0b0b0f; --muted:#9aa0a6; --accent:#8b5cf6;
+    }
+    html,body{height:100%}
+    body{
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg,#05050a 0%, #07080d 60%);
+      color: #e6eef8;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:0; margin:0;
+    }
+
+    /* Top gradient orb */
+    .hero-orb{
+      position:absolute; inset: -40% -20% auto auto; width: 720px; height:720px; filter: blur(60px); z-index:0;
+      background: radial-gradient(circle at 30% 30%, rgba(139,92,246,0.18), rgba(59,130,246,0.06) 30%, transparent 60%);
+    }
+
+    /* Card style */
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.04);
+      backdrop-filter: blur(6px);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    /* Accordion -> card transform */
+    .accordion-item { transition: all .32s cubic-bezier(.2,.9,.2,1); overflow:hidden }
+    .accordion-header{ cursor:pointer }
+    .small-muted{ color:var(--muted); font-size:0.88rem }
+
+    /* progress bar */
+    .progress-outer{ background: rgba(255,255,255,0.06); border-radius:999px; height:10px; }
+    .progress-inner{ height:10px; border-radius:999px; background:linear-gradient(90deg,var(--accent),#06b6d4); width:0% }
+
+    /* flavor chips */
+    .chip{ font-size:0.78rem; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,0.04); background:rgba(255,255,255,0.02); }
+
+    /* mobile friendly big buttons */
+    .bigbtn{ padding:12px 18px; border-radius:12px; font-weight:600; display:inline-flex; align-items:center; gap:10px; justify-content:center }
+    .glass{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    /* small responsive tweaks */
+    @media (max-width:420px){
+      .card{ padding:14px }
+      .hero h1{ font-size:1.35rem }
+    }
+
+    /* simple icon style fix for lucide */
+    .lucide { vertical-align: -0.15em }
+  </style>
+</head>
+<body>
+
+  <div class="hero-orb" aria-hidden="true"></div>
+
+  <main class="max-w-3xl mx-auto p-4" role="main">
+    <!-- Header / Branding -->
+    <header class="flex items-center justify-between mb-4 z-10">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-cyan-400 flex items-center justify-center shadow-lg">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" class="lucide text-white"><path d="M12 2v20M2 12h20" stroke="white" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <div class="text-sm font-semibold">Infodose • ViViVi</div>
+          <div class="text-xs small-muted">Quiz dos Arquétipos — Aromas & Feng Shui</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="btn-theme" class="p-2 rounded-md glass" title="Tema"><svg data-lucide="sun" class="lucide" width="18" height="18"></svg></button>
+        <button id="btn-share" class="p-2 rounded-md glass" title="Compartilhar"><svg data-lucide="share-2" class="lucide" width="18" height="18"></svg></button>
+      </div>
+    </header>
+
+    <!-- Landing -->
+    <section id="landing" class="card mb-4 z-10">
+      <div class="hero">
+        <h1 class="text-2xl font-extrabold">Quiz Místico dos Arquétipos</h1>
+        <p class="small-muted mt-2">Descubra seu arquétipo e receba a sugestão ViViVi Aroma que sintoniza sua frequência. Mobile-first, touch-friendly e com blends práticos.</p>
+
+        <div class="mt-4 flex gap-2 flex-wrap">
+          <span class="chip">Arquétipos • 12</span>
+          <span class="chip">Aromas ViViVi • 12</span>
+          <span class="chip">Feng Shui • Insights</span>
+        </div>
+
+        <div class="mt-4 flex gap-3">
+          <button id="startBtn" class="bigbtn bg-gradient-to-r from-purple-600 to-cyan-500 text-white">Iniciar Quiz</button>
+          <button id="studyBtn" class="bigbtn glass text-white">Estudar Estrutura</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quiz container -->
+    <section id="quizApp" class="hidden z-10">
+      <div class="card mb-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm small-muted">Pergunta <span id="qIndex">1</span>/<span id="qTotal">10</span></div>
+            <div id="qTitle" class="font-semibold mt-1">Como você organiza seu espaço de trabalho em casa?</div>
+          </div>
+
+          <div style="width:140px">
+            <div class="progress-outer">
+              <div id="progressBar" class="progress-inner"></div>
+            </div>
+            <div class="text-xs small-muted mt-1 text-right" id="progressPct">0%</div>
+          </div>
+        </div>
+
+        <div id="answers" class="mt-4 grid gap-3">
+          <!-- answers injected -->
+        </div>
+
+        <div class="mt-4 flex items-center justify-between">
+          <button id="prevBtn" class="bigbtn glass text-white">Anterior</button>
+          <button id="nextBtn" class="bigbtn bg-white text-black hidden">Próximo</button>
+        </div>
+      </div>
+
+      <!-- mini-cards for archetypes (accordion) -->
+      <div class="mb-4">
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Dynamically inject archetype cards compact view -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Result -->
+    <section id="result" class="hidden card z-10">
+      <div class="flex items-start gap-4">
+        <div class="w-20 h-20 rounded-xl flex items-center justify-center" id="resultBadge" style="background:linear-gradient(180deg,#1f1b3a, #2a2550)">
+          <svg data-lucide="award" class="lucide" width="34" height="34"></svg>
+        </div>
+        <div>
+          <h2 id="resultTitle" class="text-xl font-bold">Seu Arquétipo</h2>
+          <div id="resultSubtitle" class="small-muted">Descrição breve</div>
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 gap-3">
+        <div class="card">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="small-muted">ViViVi Aroma recomendado</div>
+              <div id="aromaName" class="font-semibold mt-1">Aroma da Paz</div>
+            </div>
+            <div class="text-right small-muted">
+              <div id="aromaTag">Inocente</div>
+            </div>
+          </div>
+
+          <div class="mt-3 grid grid-cols-1 gap-2">
+            <div class="small-muted">Essências necessárias</div>
+            <div id="ingredients" class="font-medium">Lavanda, camomila e capim-limão</div>
+            <div class="text-sm small-muted mt-2">Sugestão de ambientes: <span id="envs">Quartos, salas de meditação</span></div>
+            <div class="mt-3 flex gap-2">
+              <button id="applyBlend" class="bigbtn bg-gradient-to-r from-green-400 to-emerald-400 text-black">Ver Receita</button>
+              <button id="saveBtn" class="bigbtn glass text-white">Salvar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="small-muted">Efeitos na mente e na vida</div>
+          <div id="effects" class="mt-2">Reduz o estresse, promove empatia e estimula convivência harmoniosa.</div>
+        </div>
+
+        <div class="card">
+          <div class="flex items-center justify-between">
+            <div class="small-muted">Integração com a Pirâmide ViViVi</div>
+            <div class="small-muted">Dopamina • FFC</div>
+          </div>
+          <div class="mt-2 small-muted">Use este aroma em ciclos: 21 dias de uso estratégico para ancorar novos hábitos.</div>
+        </div>
+      </div>
+
+      <div class="mt-4 flex gap-3">
+        <button id="restartBtn" class="bigbtn glass text-white">Refazer Quiz</button>
+        <button id="shareResult" class="bigbtn bg-gradient-to-r from-purple-600 to-cyan-500 text-white">Compartilhar Resultado</button>
+      </div>
+    </section>
+
+    <!-- Study modal / details -->
+    <section id="study" class="hidden card z-10">
+      <h3 class="font-semibold">Estrutura técnica (CDNs e Webkits incluídos)</h3>
+      <ul class="text-sm small-muted mt-2 space-y-2">
+        <li>Tailwind CSS (CDN) — estilização utilitária e responsiva</li>
+        <li>Google Fonts — Inter (UI) + JetBrains Mono (mono para branding)</li>
+        <li>Lucide icons — ícones SVG leves</li>
+        <li>Vanilla JS — compatibilidade máxima em mobile webviews</li>
+        <li>Touch friendly: botões grandes, espaçamento e inputs com aria labels</li>
+      </ul>
+
+      <div class="mt-4">
+        <button id="closeStudy" class="bigbtn glass">Fechar</button>
+      </div>
+    </section>
+
+    <footer class="mt-6 text-center small-muted">Made with ✨ by Kodux Style — ViViVi Infodose</footer>
+  </main>
+
+<script>
+  // activate lucide icons
+  document.addEventListener('DOMContentLoaded', ()=>{ if(window.lucide) lucide.replace() });
+
+  /**********************
+   Data: questions + archetype weights
+   - The quiz uses 10 curated questions (from your PDF/content)
+   - Each answer (a,b,c,d) gives weights across the 12 archetypes.
+  **********************/
+  const archetypes = [
+    "Inocente","Explorador","Sábio","Herói","Cuidador","Rebelde",
+    "Amante","Criador","Bobo da Corte","Mago","Governante","Órfão"
+  ];
+
+  // ViViVi aroma map (from your content)
+  const aromaMap = {
+    "Inocente": { name:"ViViVi Aroma da Paz", ingredients:"Lavanda, camomila, capim-limão", envs:"Quartos, meditação", effects:"Reduz o estresse, promove empatia e serenidade." },
+    "Explorador": { name:"ViViVi Aroma dos Novos Caminhos", ingredients:"Cedro, eucalipto, pimenta rosa", envs:"Escritórios, halls, varandas", effects:"Estimula coragem e abertura a oportunidades." },
+    "Sábio": { name:"ViViVi Aroma da Mente", ingredients:"Sândalo, alecrim, incenso", envs:"Estudos, bibliotecas", effects:"Melhora foco, clareza e intuição." },
+    "Herói": { name:"ViViVi Aroma do Triunfo", ingredients:"Limão siciliano, gengibre, alecrim", envs:"Home-office, academia", effects:"Aumenta coragem, energia e foco em metas." },
+    "Cuidador": { name:"ViViVi Aroma do Lar que Acolhe", ingredients:"Baunilha, rosa, camomila", envs:"Cozinhas, salas", effects:"Cria um ambiente acolhedor e de cuidado." },
+    "Rebelde": { name:"ViViVi Aroma da Revolução que Encanta", ingredients:"Pimenta preta, cravo, cardamomo", envs:"Quartos, áreas de lazer", effects:"Inspira ousadia e autenticidade." },
+    "Amante": { name:"ViViVi Aroma do Desejo que Seduz", ingredients:"Jasmim, rosa damascena, âmbar", envs:"Quartos românticos", effects:"Aumenta magnetismo e intimidade." },
+    "Criador": { name:"ViViVi Aroma da Criação", ingredients:"Laranja doce, ylang-ylang, gerânio", envs:"Ateliês, salas de estar", effects:"Amplifica criatividade e inovação." },
+    "Bobo da Corte": { name:"ViViVi Aroma da Alegria que Conecta", ingredients:"Tangerina, hortelã, melissa", envs:"Salas de jogos, lazer", effects:"Leveza e humor; conecta socialmente." },
+    "Mago": { name:"ViViVi Aroma da Prosperidade", ingredients:"Canela, patchouli, laranja amarga", envs:"Escritórios, cantos de prosperidade", effects:"Atrai abundância e transforma energia." },
+    "Governante": { name:"ViViVi Aroma do Poder", ingredients:"Vetiver, jasmim, cedro", envs:"Salas de reunião, jantar", effects:"Projeta liderança e estabilidade." },
+    "Órfão": { name:"ViViVi Aroma das Raízes que Sustentam", ingredients:"Lavanda, manjericão, cipreste", envs:"Salas de estar, cozinhas", effects:"Promove pertencimento e segurança emocional." }
+  };
+
+  // Questions (10) — using the content from your PDF with short labels
+  const questions = [
+    { q:"Como você organiza seu espaço de trabalho em casa?", a:"Deixa tudo visível e acessível para agir rapidamente.", b:"Prefere um ambiente minimalista, com poucas distrações.", c:"Mantém objetos que inspiram, mesmo que estejam fora de ordem.", d:"Gosta de mudar constantemente o layout para sentir uma nova energia." },
+    { q:"Quando algo quebra ou não funciona, qual é sua reação?", a:"Corrige imediatamente, sem hesitar.", b:"Analisa a situação buscando solução eficiente.", c:"Acredita que é um sinal para deixar fluir.", d:"Consulta especialistas e respeita a energia do problema." },
+    { q:"Ao planejar uma refeição, como você se organiza?", a:"Prepara tudo em grandes quantidades para economizar tempo.", b:"Cuida da escolha dos ingredientes com equilíbrio.", c:"Gosta de seguir tradições e receitas familiares.", d:"Deixa-se guiar pela intuição, sem plano fixo." },
+    { q:"Sua rotina matinal segue algum ciclo ou ritual?", a:"Sim, faço o mesmo diariamente para otimizar tempo.", b:"Gosto de variar para sentir novos começos.", c:"Meu ritual depende da energia que sinto ao acordar.", d:"Preparo meu ambiente na noite anterior, buscando fluidez." },
+    { q:"Como você lida com objetos acumulados que não usa mais?", a:"Desapega imediatamente.", b:"Mantém só itens com propósito claro.", c:"Gosta de relembrar as histórias por trás dos objetos.", d:"Faz limpezas profundas de tempos em tempos." },
+    { q:"Você tem algum “vício” em seu dia a dia?", a:"Preciso controlar a rotina para ter domínio.", b:"Prefiro hábitos saudáveis e equilibrados.", c:"Sou flexível e me permito indulgências.", d:"Sigo comportamentos cíclicos buscando harmonia." },
+    { q:"Sua casa tem um canto especial para meditação/relax?", a:"Sim, uso diariamente para focar.", b:"Tenho um espaço minimalista que acalma só de olhar.", c:"Mudo conforme a energia do momento.", d:"Espaço cheio de memórias e objetos conectivos." },
+    { q:"Como decide o que fazer primeiro na lista?", a:"Prioriza o que é mais urgente e prático.", b:"Avalia equilíbrio entre tempo e esforço.", c:"Vai conforme a energia do dia.", d:"Foca no que trará maior harmonia ao ambiente." },
+    { q:"Quando precisa de inspiração, o que faz em casa?", a:"Organizo e limpo o espaço para abrir criatividade.", b:"Desconecto e observo o ambiente em silêncio.", c:"Procuro um objeto que traga boas lembranças.", d:"Mudo o posicionamento dos móveis para atrair nova energia." },
+    { q:"Como adapta sua casa para otimizar tempo/produtividade?", a:"Crio rotas rápidas e eficientes entre cômodos.", b:"Organizo tudo em categorias e mantenho o necessário.", c:"Deixo o ambiente flexível, ajustando conforme necessidade.", d:"Organizo segundo Feng Shui para favorecer fluxo de energia." }
+  ];
+
+  // weights for each answer (a,b,c,d) across 12 archetypes (in same order as archetypes array)
+  // These are heuristic weights designed to infer the dominant archetype among 12 options.
+  const weights = {
+    a: [1,1,0,3,1,0,0,1,0,0,2,1], // action / pragmatic -> Hero, Governante, etc.
+    b: [1,1,3,0,1,0,0,1,0,1,1,1], // balanced / analytic -> Sábio, Criador, Mago, etc.
+    c: [2,0,0,0,2,0,3,1,1,0,0,2], // sentimental / memory -> Amante, Inocente, Cuidador, Orfão
+    d: [0,2,1,1,1,2,0,2,1,3,0,0]  // change / energy / feng shui -> Mago, Rebelde, Criador, Explorador
+  };
+
+  // state
+  let state = {
+    idx:0,
+    answers: Array(questions.length).fill(null),
+    scores: Object.fromEntries(archetypes.map(a=>[a,0]))
+  };
+
+  // UI refs
+  const landing = document.getElementById('landing');
+  const quizApp = document.getElementById('quizApp');
+  const result = document.getElementById('result');
+  const study = document.getElementById('study');
+
+  const qIndexEl = document.getElementById('qIndex');
+  const qTotalEl = document.getElementById('qTotal');
+  const qTitleEl = document.getElementById('qTitle');
+  const answersEl = document.getElementById('answers');
+  const progressBar = document.getElementById('progressBar');
+  const progressPct = document.getElementById('progressPct');
+
+  // init
+  qTotalEl.textContent = questions.length;
+
+  document.getElementById('startBtn').addEventListener('click', ()=>{
+    landing.classList.add('hidden');
+    study.classList.add('hidden');
+    result.classList.add('hidden');
+    quizApp.classList.remove('hidden');
+    state.idx = 0;
+    renderQuestion();
+  });
+
+  document.getElementById('studyBtn').addEventListener('click', ()=>{
+    landing.classList.add('hidden');
+    study.classList.remove('hidden');
+  });
+  document.getElementById('closeStudy').addEventListener('click', ()=>{
+    study.classList.add('hidden');
+    landing.classList.remove('hidden');
+  });
+
+  // theme toggle (simple)
+  const btnTheme = document.getElementById('btn-theme');
+  btnTheme.addEventListener('click', ()=>{
+    document.body.classList.toggle('light');
+    if(document.body.classList.contains('light')){
+      document.body.style.background = "linear-gradient(180deg,#f8fafc,#eef2ff)";
+      document.body.style.color = "#042233";
+    } else {
+      document.body.style.background = "linear-gradient(180deg,#05050a,#07080d)";
+      document.body.style.color = "#e6eef8";
+    }
+  });
+
+  // share
+  document.getElementById('btn-share').addEventListener('click', shareApp);
+  document.getElementById('shareResult').addEventListener('click', shareResult);
+
+  function shareApp(){
+    const payload = {
+      title: 'Infodose ViViVi — Quiz dos Arquétipos',
+      text: 'Descubra seu arquétipo e aroma ViViVi — abra o quiz!',
+      url: location.href
+    };
+    if(navigator.share) navigator.share(payload).catch(()=>alert('Compartilhamento cancelado'));
+    else alert('Abra este link no celular para compartilhar: ' + location.href);
+  }
+
+  function shareResult(){
+    const arche = document.getElementById('resultTitle').textContent;
+    const aroma = document.getElementById('aromaName').textContent;
+    const text = `Meu arquétipo: ${arche} — ${aroma}\nTeste ViViVi Infodose.`;
+    if(navigator.share) navigator.share({title:'Meu Arquétipo ViViVi', text, url:location.href});
+    else navigator.clipboard.writeText(text).then(()=>alert('Resultado copiado!'));
+  }
+
+  // render question
+  function renderQuestion(){
+    const i = state.idx;
+    const total = questions.length;
+    qIndexEl.textContent = i+1;
+    qTitleEl.textContent = questions[i].q;
+    progressBar.style.width = `${Math.round((i/total)*100)}%`;
+    progressPct.textContent = `${Math.round((i/total)*100)}%`;
+
+    // build answers
+    answersEl.innerHTML = '';
+    ['a','b','c','d'].forEach(key=>{
+      const text = questions[i][key];
+      const btn = document.createElement('button');
+      btn.className = 'card accordion-item text-left';
+      btn.innerHTML = `<div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-[rgba(255,255,255,0.02)] flex items-center justify-center font-semibold">${key.toUpperCase()}</div>
+        <div class="flex-1"><div class="font-medium">${text}</div></div>
+      </div>`;
+      // mark selected
+      if(state.answers[i] === key) btn.style.outline = '2px solid rgba(139,92,246,0.25)';
+      btn.addEventListener('click', ()=>{
+        // set answer, animate small pulse
+        state.answers[i] = key;
+        flash(btn);
+        // auto-advance slightly
+        if(i < questions.length -1){
+          state.idx++;
+          renderQuestion();
+        } else {
+          // finish -> compute result
+          computeResult();
+        }
+      });
+      answersEl.appendChild(btn);
+    });
+
+    // prev button
+    document.getElementById('prevBtn').onclick = ()=>{
+      if(state.idx > 0){ state.idx--; renderQuestion(); }
+      else { /* back to landing */ quizApp.classList.add('hidden'); landing.classList.remove('hidden'); }
+    };
+  }
+
+  function flash(el){
+    el.animate([{ transform:'scale(1)' },{ transform:'scale(0.995)' },{ transform:'scale(1)' }], { duration:200, easing:'ease-out' });
+    // re-render to update selection style
+    setTimeout(()=>renderQuestion(),120);
+  }
+
+  function computeResult(){
+    // reset scores
+    const sc = Object.fromEntries(archetypes.map(a=>[a,0]));
+    // accumulate
+    state.answers.forEach((ans, qi)=>{
+      if(!ans) return;
+      const w = weights[ans];
+      archetypes.forEach((ar, ix)=>{
+        sc[ar] += w[ix] || 0;
+      });
+    });
+
+    // store scores
+    state.scores = sc;
+
+    // determine top archetype(s)
+    const sorted = Object.entries(sc).sort((a,b)=>b[1]-a[1]);
+    const top = sorted[0][0];
+
+    // show result UI
+    showResult(top, sorted);
+  }
+
+  function showResult(top, sorted){
+    quizApp.classList.add('hidden');
+    result.classList.remove('hidden');
+
+    // Title and subtitle
+    document.getElementById('resultTitle').textContent = top;
+    document.getElementById('resultSubtitle').textContent = summaryFor(top);
+    // aroma block
+    const aroma = aromaMap[top];
+    document.getElementById('aromaName').textContent = aroma.name;
+    document.getElementById('aromaTag').textContent = top;
+    document.getElementById('ingredients').textContent = aroma.ingredients;
+    document.getElementById('envs').textContent = aroma.envs;
+    document.getElementById('effects').textContent = aroma.effects;
+
+    // applyBlend shows a simple recipe modal
+    document.getElementById('applyBlend').onclick = ()=>showBlendRecipe(top);
+
+    // save button (localStorage)
+    document.getElementById('saveBtn').onclick = ()=>{
+      const saved = JSON.parse(localStorage.getItem('vi_archetypes')||'[]');
+      saved.unshift({ archetype:top, aroma:aroma.name, time:new Date().toISOString() });
+      localStorage.setItem('vi_archetypes', JSON.stringify(saved.slice(0,20)));
+      alert('Resultado salvo localmente ✅');
+    };
+
+    // restart
+    document.getElementById('restartBtn').onclick = ()=>{
+      result.classList.add('hidden');
+      landing.classList.remove('hidden');
+      state.answers = Array(questions.length).fill(null);
+      state.scores = Object.fromEntries(archetypes.map(a=>[a,0]));
+    };
+  }
+
+  // summary short descriptions for archetypes (from your big table, shorted)
+  function summaryFor(a){
+    const s = {
+      "Inocente":"Busca simplicidade, confiança e harmonia — foco em cura e paz interior.",
+      "Explorador":"Busca liberdade e novas experiências — motivado por descoberta.",
+      "Sábio":"Valoriza conhecimento, clareza e análise profunda.",
+      "Herói":"Ação, coragem e superação — liderança orientada ao resultado.",
+      "Cuidador":"Proteção, apoio e empatia — põe os outros em primeiro lugar.",
+      "Rebelde":"Quebra padrões e inovação — independência e ousadia.",
+      "Amante":"Conexões emocionais e intimidade — valoriza o amor.",
+      "Criador":"Inovação constante — manifesta ideias em formas concretas.",
+      "Bobo da Corte":"Leveza, humor e criatividade espontânea.",
+      "Mago":"Transformação, intuição e manifestação da realidade.",
+      "Governante":"Controle, liderança e estabilidade social.",
+      "Órfão":"Busca de pertencimento e segurança; resiliência."
+    };
+    return s[a] || "";
+  }
+
+  // showBlendRecipe: modal-ish
+  function showBlendRecipe(arche){
+    const info = aromaMap[arche];
+    // build dialog
+    const blend = document.createElement('div');
+    blend.className = 'fixed inset-0 flex items-end md:items-center justify-center p-4';
+    blend.style.background = 'linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.6))';
+    blend.innerHTML = `
+      <div class="w-full max-w-md card">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm small-muted">Receita sugerida • ${arche}</div>
+            <div class="font-semibold mt-1">${info.name}</div>
+          </div>
+          <button id="closeBlend" class="p-2 rounded-md glass">Fechar</button>
+        </div>
+        <div class="mt-3 small-muted">Ingredientes & proporções (base 10ml)</div>
+        <div class="mt-2">
+          <ul class="list-disc pl-5">
+            ${info.ingredients.split(',').map((ing,i)=>`<li><strong>${Math.max(1, Math.round((5 - i) * 2))}%</strong> — ${ing.trim()}</li>`).join('')}
+          </ul>
+        </div>
+        <div class="mt-3 small-muted">Modo: 5-8 gotas por 10ml de óleo carreador. Usar difusor por 20-30 minutos.</div>
+        <div class="mt-4 flex gap-2">
+          <button id="saveBlend" class="bigbtn bg-gradient-to-r from-green-400 to-emerald-400 text-black">Salvar Receita</button>
+          <button id="shareBlend" class="bigbtn glass">Compartilhar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(blend);
+    if(window.lucide) lucide.replace();
+
+    blend.querySelector('#closeBlend').onclick = ()=>blend.remove();
+    blend.querySelector('#saveBlend').onclick = ()=>{
+      const saved = JSON.parse(localStorage.getItem('vi_blends')||'[]');
+      saved.unshift({ archetype:arche, aroma:info.name, recipe:info.ingredients, time:new Date().toISOString() });
+      localStorage.setItem('vi_blends', JSON.stringify(saved.slice(0,30)));
+      alert('Receita salva ✅');
+    };
+    blend.querySelector('#shareBlend').onclick = ()=>{
+      const txt = `${info.name} — ${info.ingredients}\nSugestão ViViVi para ${arche}.`;
+      if(navigator.share) navigator.share({title:info.name, text:txt});
+      else { navigator.clipboard.writeText(txt).then(()=>alert('Receita copiada!')) }
+    };
+  }
+
+  // small animation helper (used on click)
+  function pulse(el){
+    el.animate([{ transform:'scale(1)' }, { transform:'scale(1.02)' }, { transform:'scale(1)'}], { duration:240 });
+  }
+
+  // On load, optionally show a tiny "quick demo" area of archetypes as cards
+  (function renderMiniCards(){
+    const container = document.createElement('div');
+    container.className = 'grid grid-cols-3 gap-3 mb-4';
+    archetypes.forEach(a=>{
+      const c = document.createElement('div');
+      c.className = 'card text-xs text-center small-muted cursor-pointer';
+      c.innerHTML = `<div class="font-semibold">${a}</div><div class="mt-1">${(aromaMap[a]||{}).name||''}</div>`;
+      c.addEventListener('click', ()=>{
+        // quick preview open result
+        showResult(a, []);
+      });
+      container.appendChild(c);
+    });
+    // append under quiz header
+    document.querySelector('#quizApp').insertBefore(container, document.querySelector('#quizApp').firstChild);
+  })();
+
+  // optionally, allow keyboard navigation for desktop dev
+  document.addEventListener('keydown', (e)=>{
+    if(quizApp.classList.contains('hidden')) return;
+    if(e.key === 'ArrowLeft') document.getElementById('prevBtn').click();
+    if(e.key === 'ArrowRight') {
+      // simulate choosing nothing -> go to next question or compute
+    }
+  });
+
+  // small startup: preload any saved results summary
+  window.addEventListener('load', ()=>{
+    try{ const saved = JSON.parse(localStorage.getItem('vi_archetypes')||'[]');
+      if(saved && saved.length){
+        // show a subtle toast? simple console.log
+        console.log('Saved results:',saved.slice(0,3));
+      }
+    }catch(e){}
+  });
+
+</script>
+</body>
+</html>

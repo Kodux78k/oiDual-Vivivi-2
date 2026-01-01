@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dual Infodose OS</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        vivivi: { dark: '#050505', gold: '#ffd700', rose: '#ff007f', tiffany: '#00f6ff' }
+                    },
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'],
+                        code: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'spin-slow': 'spin 8s linear infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* --- DUAL CORE STYLES --- */
+        :root {
+            --bg-color: #050505;
+            --glass: rgba(20, 20, 25, 0.6);
+            --border: rgba(255, 255, 255, 0.08);
+            --neon-a: #00f6ff;
+            --neon-b: #ff007f;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #1a1c4b, var(--bg-color));
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            transition: filter 0.3s ease;
+        }
+        
+        /* Modos */
+        body.safe-mode .identity-text { filter: blur(6px); }
+        body.rural-mode * { animation: none !important; backdrop-filter: none !important; box-shadow: none !important; }
+        body.rural-mode .glass-panel, body.rural-mode nav { background: #111; border: 1px solid #333; }
+
+        /* Loader: Nucleus */
+        .di-nucleus { 
+            width: 44px; height: 44px; position: relative; cursor: pointer; z-index: 60;
+            transition: transform 0.3s ease;
+        }
+        .di-nucleus:active { transform: scale(0.9); }
+        .di-nucleus .ring {
+            position: absolute; inset: 0; border: 2px solid color-mix(in srgb, var(--neon-a), var(--neon-b)); 
+            border-radius: 50%; animation: spin 4s linear infinite;
+        }
+        .di-nucleus .core {
+            position: absolute; left: 50%; top: 50%; width: 60%; height: 60%; 
+            background: linear-gradient(135deg, var(--neon-a), var(--neon-b)); 
+            transform: translate(-50%, -50%); border-radius: 50%; 
+            box-shadow: 0 0 15px var(--neon-b);
+        }
+
+        /* Header Accordion */
+        nav { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); height: 70px; overflow: hidden; }
+        nav.expanded { height: 240px; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--neon-a); }
+
+        /* Control Grid (Overlay) */
+        #control-grid {
+            position: fixed; inset: 0; background: rgba(5,5,5,0.95); backdrop-filter: blur(10px);
+            z-index: 55; opacity: 0; pointer-events: none; transition: 0.3s ease;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        #control-grid.active { opacity: 1; pointer-events: all; }
+
+        /* Utilities */
+        .glass-panel {
+            background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border); border-radius: 20px;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="flex flex-col items-center">
+
+    <nav id="main-header" class="fixed top-0 w-full max-w-md z-50 bg-vivivi-dark/60 backdrop-blur-md border-b border-white/5 px-6 pt-3" onclick="sys.toggleHeader(event)">
+        
+        <div class="flex justify-between items-center h-[50px] relative">
+            <div class="opacity-80">
+                <h1 class="font-bold text-lg tracking-widest text-white">DUAL</h1>
+                <span class="text-[9px] text-vivivi-tiffany tracking-[0.2em] uppercase">Infodose OS</span>
+            </div>
+
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" onclick="sys.toggleGrid(event)">
+                <div class="di-nucleus">
+                    <div class="ring"></div>
+                    <div class="core"></div>
+                </div>
+            </div>
+
+            <div class="flex gap-3 text-xs text-gray-400">
+                <i class="fa-solid fa-wifi" id="status-wifi"></i>
+                <i class="fa-solid fa-battery-three-quarters"></i>
+            </div>
+        </div>
+
+        <div class="pt-6 px-2 space-y-4 opacity-0 transition-opacity duration-300" id="header-content">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-vivivi-tiffany to-vivivi-rose p-[2px]">
+                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Haski" class="rounded-full bg-black" alt="User">
+                </div>
+                <div>
+                    <div class="font-code text-vivivi-gold text-sm font-bold identity-text">OPERADOR HASKI</div>
+                    <div class="text-[10px] text-gray-500 tracking-wide">TOKEN: <span class="text-white font-mono">XYZ-99-DUAL</span></div>
+                </div>
+            </div>
+            
+            <div class="bg-white/5 rounded-lg p-3 grid grid-cols-2 gap-2 text-center">
+                <div>
+                    <div class="text-[9px] uppercase text-gray-500">Nível de Acesso</div>
+                    <div class="text-xs font-bold text-vivivi-tiffany">ADMIN ROOT</div>
+                </div>
+                <div>
+                    <div class="text-[9px] uppercase text-gray-500">Status Mental</div>
+                    <div class="text-xs font-bold text-vivivi-rose">SINTONIZADO</div>
+                </div>
+            </div>
+
+            <div class="text-[10px] text-center text-gray-600 font-mono mt-2">
+                // ULTIMO LOGIN: HOJE 20:45
+            </div>
+        </div>
+    </nav>
+
+    <div id="control-grid">
+        <div class="absolute top-10 right-10" onclick="sys.toggleGrid()">
+            <i data-lucide="x" class="text-white w-8 h-8 cursor-pointer hover:text-vivivi-rose"></i>
+        </div>
+
+        <h2 class="text-2xl font-sans font-thin mb-8 tracking-[0.2em] text-center">SELECIONE O MÓDULO</h2>
+
+        <div class="grid grid-cols-2 gap-4 max-w-xs w-full px-6">
+            <button onclick="sys.openApp('vivivi')" class="glass-panel p-6 flex flex-col items-center gap-3 hover:bg-vivivi-rose/10 transition group">
+                <i class="fa-solid fa-eye text-3xl text-vivivi-rose group-hover:scale-110 transition"></i>
+                <span class="text-xs font-bold tracking-widest">ORÁCULO</span>
+            </button>
+
+            <button onclick="sys.openApp('vault')" class="glass-panel p-6 flex flex-col items-center gap-3 hover:bg-vivivi-tiffany/10 transition group">
+                <i data-lucide="box" class="w-8 h-8 text-vivivi-tiffany group-hover:scale-110 transition"></i>
+                <span class="text-xs font-bold tracking-widest">VAULT</span>
+            </button>
+        </div>
+
+        <div class="mt-10 space-y-3 w-full max-w-xs px-6">
+            <div class="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
+                <span class="text-xs font-code"><i class="fa-solid fa-user-secret mr-2"></i>SAFE MODE</span>
+                <button onclick="sys.toggleMode('safe')" id="btn-safe" class="w-8 h-4 rounded-full bg-gray-700 relative transition-colors"><div class="w-2 h-2 bg-white rounded-full absolute left-1 top-1 transition-transform"></div></button>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
+                <span class="text-xs font-code"><i class="fa-solid fa-leaf mr-2"></i>RURAL (ECO)</span>
+                <button onclick="sys.toggleMode('rural')" id="btn-rural" class="w-8 h-4 rounded-full bg-gray-700 relative transition-colors"><div class="w-2 h-2 bg-white rounded-full absolute left-1 top-1 transition-transform"></div></button>
+            </div>
+        </div>
+    </div>
+
+    <main class="w-full max-w-md pt-24 px-4 pb-10 flex-1 relative">
+        
+        <div id="view-landing" class="h-[60vh] flex flex-col items-center justify-center text-center opacity-50">
+            <p class="font-code text-xs text-vivivi-tiffany animate-pulse">AGUARDANDO ATIVAÇÃO DO NÚCLEO...</p>
+        </div>
+
+        <div id="view-vivivi" class="hidden">
+            <div class="glass-panel p-6 border-vivivi-rose/30">
+                <h2 class="text-xl font-serif text-vivivi-rose mb-4">Oráculo ViViVi</h2>
+                <p class="text-sm text-gray-300 mb-4">Qual frequência sua alma emite hoje?</p>
+                <button class="w-full text-left p-3 rounded bg-white/5 mb-2 hover:bg-vivivi-rose/20 transition">1. Expansão e Poder</button>
+                <button class="w-full text-left p-3 rounded bg-white/5 mb-2 hover:bg-vivivi-rose/20 transition">2. Paz e Quietude</button>
+                <button class="w-full text-left p-3 rounded bg-white/5 mb-2 hover:bg-vivivi-rose/20 transition">3. Criação Caótica</button>
+            </div>
+        </div>
+
+        <div id="view-vault" class="hidden">
+            <div class="glass-panel p-6 border-vivivi-tiffany/30">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-code text-vivivi-tiffany">VAULT // UNO</h2>
+                    <span class="text-[10px] bg-vivivi-tiffany/20 text-vivivi-tiffany px-2 py-1 rounded">V2.0</span>
+                </div>
+                <textarea class="w-full h-32 bg-black border border-white/10 rounded-lg p-3 text-xs font-code text-gray-300 mb-3" placeholder="// Insira dados ou código HTML..."></textarea>
+                <div class="flex gap-2">
+                    <button class="flex-1 py-2 bg-vivivi-tiffany text-black font-bold text-xs rounded">SALVAR</button>
+                    <button class="flex-1 py-2 bg-white/10 text-white font-bold text-xs rounded">LER</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // SYSTEM CORE
+        const sys = {
+            state: {
+                headerOpen: false,
+                safeMode: false,
+                ruralMode: false
+            },
+
+            // 1. Header Accordion Logic
+            toggleHeader: function(e) {
+                // Se clicou no botão "Nucleus" ou no Grid, não mexe na sanfona
+                if (e && (e.target.closest('.di-nucleus') || e.target.closest('#control-grid'))) return;
+
+                const nav = document.getElementById('main-header');
+                const content = document.getElementById('header-content');
+                
+                this.state.headerOpen = !this.state.headerOpen;
+
+                if (this.state.headerOpen) {
+                    nav.classList.add('expanded');
+                    content.classList.remove('opacity-0');
+                    if(navigator.vibrate) navigator.vibrate(10); // Haptic feedback suave
+                } else {
+                    nav.classList.remove('expanded');
+                    content.classList.add('opacity-0');
+                }
+            },
+
+            // 2. Control Grid Logic (O Menu da Bolinha)
+            toggleGrid: function(e) {
+                if(e) e.stopPropagation(); // Impede abrir o header junto
+                
+                const grid = document.getElementById('control-grid');
+                grid.classList.toggle('active');
+                
+                // Se abrir o grid, fecha o header para limpar a visão
+                if (grid.classList.contains('active')) {
+                    if (this.state.headerOpen) this.toggleHeader();
+                }
+            },
+
+            // 3. Navigation Logic
+            openApp: function(appName) {
+                // Esconde todas as views
+                ['landing', 'vivivi', 'vault'].forEach(id => {
+                    document.getElementById('view-' + id).classList.add('hidden');
+                });
+                
+                // Mostra a escolhida
+                document.getElementById('view-' + appName).classList.remove('hidden');
+                
+                // Fecha o grid
+                this.toggleGrid();
+            },
+
+            // 4. Modes Logic
+            toggleMode: function(mode) {
+                const body = document.body;
+                
+                if (mode === 'safe') {
+                    this.state.safeMode = !this.state.safeMode;
+                    body.classList.toggle('safe-mode');
+                    this.updateToggleBtn('btn-safe', this.state.safeMode, 'bg-vivivi-rose');
+                }
+                
+                if (mode === 'rural') {
+                    this.state.ruralMode = !this.state.ruralMode;
+                    body.classList.toggle('rural-mode');
+                    this.updateToggleBtn('btn-rural', this.state.ruralMode, 'bg-vivivi-tiffany');
+                }
+            },
+
+            updateToggleBtn: function(btnId, isActive, activeClass) {
+                const btn = document.getElementById(btnId);
+                const dot = btn.querySelector('div');
+                
+                if (isActive) {
+                    btn.classList.remove('bg-gray-700');
+                    btn.classList.add(activeClass);
+                    dot.style.transform = 'translateX(16px)';
+                } else {
+                    btn.classList.add('bg-gray-700');
+                    btn.classList.remove(activeClass);
+                    dot.style.transform = 'translateX(0)';
+                }
+            }
+        };
+
+        // Init Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

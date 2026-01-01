@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dual Infodose OS | Haski Core</title>
+    
+    <!-- Tailwind & Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        vivivi: { 
+                            dark: '#050414', 
+                            deep: '#1a103c',
+                            gold: '#ffd700', 
+                            neonGold: '#fff59d',
+                            rose: '#ff2e63', 
+                            tiffany: '#08f7fe',
+                            glass: 'rgba(20, 20, 35, 0.6)'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'],
+                        tech: ['Orbitron', 'sans-serif'],
+                        code: ['JetBrains Mono', 'monospace'],
+                    },
+                    boxShadow: {
+                        'neon-gold': '0 0 10px rgba(255, 215, 0, 0.3), 0 0 20px rgba(255, 215, 0, 0.1)',
+                        'neon-blue': '0 0 10px rgba(8, 247, 254, 0.3), 0 0 20px rgba(8, 247, 254, 0.1)',
+                        'neon-rose': '0 0 10px rgba(255, 46, 99, 0.3), 0 0 20px rgba(255, 46, 99, 0.1)',
+                    },
+                    animation: {
+                        'spin-slow': 'spin 8s linear infinite',
+                        'pulse-glow': 'pulseGlow 3s infinite',
+                        'scanline': 'scanline 8s linear infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { filter: 'brightness(1) drop-shadow(0 0 5px rgba(8,247,254,0.5))' },
+                            '50%': { filter: 'brightness(1.3) drop-shadow(0 0 15px rgba(8,247,254,0.8))' },
+                        },
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* --- CORE VISUALS --- */
+        :root {
+            --bg-grad: linear-gradient(180deg, #050414 0%, #0a0a1a 100%);
+            --neon-a: #08f7fe;
+            --neon-b: #ff2e63;
+        }
+
+        body {
+            background: var(--bg-grad);
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* Scanlines Effect */
+        .scanlines {
+            position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            opacity: 0.15;
+        }
+
+        /* Glassmorphism Advanced */
+        .glass-panel {
+            background: rgba(15, 15, 25, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        /* Buttons & Interactions */
+        .btn-tech {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-tech:active { transform: scale(0.96); }
+        .btn-tech:hover { border-color: var(--neon-a); box-shadow: 0 0 15px rgba(8, 247, 254, 0.1); }
+
+        /* Loader: Nucleus V3 */
+        .di-nucleus { 
+            width: 50px; height: 50px; position: relative; cursor: pointer; z-index: 60;
+            transition: transform 0.3s ease;
+        }
+        .di-nucleus:active { transform: scale(0.9); }
+        .di-nucleus .ring {
+            position: absolute; inset: 0; border: 2px solid transparent;
+            border-top-color: var(--neon-a); border-bottom-color: var(--neon-b);
+            border-radius: 50%; animation: spin 3s linear infinite; box-shadow: 0 0 10px rgba(8, 247, 254, 0.2);
+        }
+        .di-nucleus .core {
+            position: absolute; left: 50%; top: 50%; width: 60%; height: 60%; 
+            background: radial-gradient(circle, #fff, var(--neon-a));
+            transform: translate(-50%, -50%); border-radius: 50%; 
+            box-shadow: 0 0 15px var(--neon-a);
+            animation: pulse-glow 3s infinite;
+        }
+
+        /* Header Accordion Animation */
+        nav { transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); height: 80px; overflow: hidden; }
+        nav.expanded { height: 260px; background: rgba(5, 4, 20, 0.95); border-bottom: 1px solid var(--neon-a); box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+
+        /* Control Grid Overlay */
+        #control-grid {
+            position: fixed; inset: 0; background: rgba(5,4,20,0.95); backdrop-filter: blur(15px);
+            z-index: 55; opacity: 0; pointer-events: none; transition: 0.3s ease;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        #control-grid.active { opacity: 1; pointer-events: all; }
+
+        /* Utilities */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .text-glow { text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        
+        /* Modos */
+        body.safe-mode .identity-text { filter: blur(8px); }
+        body.rural-mode .glass-panel, body.rural-mode nav { background: #000; backdrop-filter: none; border: 1px solid #333; }
+        body.rural-mode .scanlines { display: none; }
+    </style>
+</head>
+<body class="flex flex-col items-center">
+
+    <div class="scanlines"></div>
+
+    <!-- HEADER (SANFONA UPGRADED) -->
+    <nav id="main-header" class="fixed top-0 w-full max-w-md z-50 bg-vivivi-dark/70 backdrop-blur-xl border-b border-white/5 px-6 pt-2 rounded-b-3xl" onclick="sys.toggleHeader(event)">
+        
+        <!-- Visible Bar -->
+        <div class="flex justify-between items-center h-[70px] relative">
+            <div class="opacity-90">
+                <h1 class="font-tech font-bold text-xl tracking-widest text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">DUAL</h1>
+                <span class="text-[9px] text-vivivi-tiffany tracking-[0.3em] uppercase font-bold">Infodose OS v3</span>
+            </div>
+
+            <!-- NUCLEUS (TRIGGER) -->
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" onclick="sys.toggleGrid(event)">
+                <div class="di-nucleus">
+                    <div class="ring"></div>
+                    <div class="core"></div>
+                </div>
+            </div>
+
+            <!-- Status Icons -->
+            <div class="flex gap-4 text-xs text-vivivi-tiffany/70">
+                <i class="fa-solid fa-wifi animate-pulse"></i>
+                <i class="fa-solid fa-bolt"></i>
+            </div>
+        </div>
+
+        <!-- Hidden Info (Expanded) -->
+        <div class="pt-6 px-2 space-y-5 opacity-0 transition-opacity duration-300 transform translate-y-2" id="header-content">
+            <div class="flex items-center gap-5">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-vivivi-tiffany to-vivivi-rose p-[2px] shadow-neon-blue">
+                    <div class="w-full h-full bg-black rounded-2xl flex items-center justify-center overflow-hidden">
+                        <img src="https://api.dicebear.com/9.x/bottts-neutral/svg?seed=HaskiCore" class="w-12 h-12" alt="User">
+                    </div>
+                </div>
+                <div>
+                    <div class="font-tech text-vivivi-neonGold text-lg font-bold identity-text tracking-wider">OPERADOR HASKI</div>
+                    <div class="text-[10px] text-gray-400 tracking-widest font-mono mt-1">ID: <span class="text-vivivi-tiffany">DUAL-SYS-88</span></div>
+                    <div class="flex gap-2 mt-2">
+                        <span class="px-2 py-0.5 rounded bg-vivivi-tiffany/20 text-vivivi-tiffany text-[9px] font-bold border border-vivivi-tiffany/30">ROOT</span>
+                        <span class="px-2 py-0.5 rounded bg-vivivi-rose/20 text-vivivi-rose text-[9px] font-bold border border-vivivi-rose/30">SECURE</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white/5 rounded-xl p-3 border border-white/5 text-center">
+                    <div class="text-[9px] uppercase text-gray-500 font-tech">Sincronia</div>
+                    <div class="text-sm font-bold text-white">98.4%</div>
+                </div>
+                <div class="bg-white/5 rounded-xl p-3 border border-white/5 text-center">
+                    <div class="text-[9px] uppercase text-gray-500 font-tech">Memória</div>
+                    <div class="text-sm font-bold text-white">OPTIMIZED</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- SYSTEM CONTROL GRID (OVERLAY) -->
+    <div id="control-grid">
+        <div class="absolute top-8 right-8" onclick="sys.toggleGrid()">
+            <button class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white hover:bg-vivivi-rose hover:border-vivivi-rose transition">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <h2 class="text-3xl font-tech font-bold mb-10 tracking-[0.2em] text-center text-transparent bg-clip-text bg-gradient-to-r from-vivivi-tiffany to-vivivi-rose drop-shadow-sm">MÓDULOS</h2>
+
+        <div class="grid grid-cols-2 gap-6 max-w-xs w-full px-4">
+            <!-- APP 1: ViViVi -->
+            <button onclick="sys.openApp('vivivi')" class="glass-panel p-6 flex flex-col items-center gap-4 hover:border-vivivi-gold/50 hover:bg-vivivi-gold/5 transition group relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-vivivi-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
+                <i class="fa-solid fa-dna text-4xl text-vivivi-gold group-hover:scale-110 transition duration-300 drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]"></i>
+                <span class="text-xs font-bold tracking-widest font-tech text-white z-10">ORÁCULO</span>
+            </button>
+
+            <!-- APP 2: VAULT -->
+            <button onclick="sys.openApp('vault')" class="glass-panel p-6 flex flex-col items-center gap-4 hover:border-vivivi-tiffany/50 hover:bg-vivivi-tiffany/5 transition group relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-vivivi-tiffany/10 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
+                <i data-lucide="cpu" class="w-10 h-10 text-vivivi-tiffany group-hover:scale-110 transition duration-300 drop-shadow-[0_0_10px_rgba(8,247,254,0.5)]"></i>
+                <span class="text-xs font-bold tracking-widest font-tech text-white z-10">VAULT</span>
+            </button>
+        </div>
+
+        <!-- TOGGLES -->
+        <div class="mt-12 space-y-4 w-full max-w-xs px-6">
+            <div class="flex items-center justify-between p-4 rounded-xl border border-white/10 bg-black/40 backdrop-blur-md">
+                <span class="text-xs font-code text-vivivi-rose"><i class="fa-solid fa-user-secret mr-2"></i>STEALTH MODE</span>
+                <button onclick="sys.toggleMode('safe')" id="btn-safe" class="w-10 h-5 rounded-full bg-gray-800 relative transition-all border border-gray-600"><div class="w-3 h-3 bg-gray-400 rounded-full absolute left-1 top-1 transition-transform"></div></button>
+            </div>
+            <div class="flex items-center justify-between p-4 rounded-xl border border-white/10 bg-black/40 backdrop-blur-md">
+                <span class="text-xs font-code text-vivivi-tiffany"><i class="fa-solid fa-leaf mr-2"></i>ECO MODE</span>
+                <button onclick="sys.toggleMode('rural')" id="btn-rural" class="w-10 h-5 rounded-full bg-gray-800 relative transition-all border border-gray-600"><div class="w-3 h-3 bg-gray-400 rounded-full absolute left-1 top-1 transition-transform"></div></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="w-full max-w-md pt-28 px-4 pb-24 flex-1 relative z-10">
+        
+        <!-- View: Landing (Empty State) -->
+        <div id="view-landing" class="h-[50vh] flex flex-col items-center justify-center text-center opacity-70">
+            <div class="w-24 h-24 rounded-full border border-white/10 flex items-center justify-center mb-6 animate-pulse-glow">
+                <i class="fa-solid fa-fingerprint text-4xl text-vivivi-tiffany"></i>
+            </div>
+            <p class="font-tech text-sm text-vivivi-tiffany tracking-widest mb-2">AGUARDANDO COMANDO</p>
+            <p class="text-[10px] text-gray-500 font-code">Toque no Núcleo para Iniciar</p>
+        </div>
+
+        <!-- View: ViViVi (Quiz Upgraded) -->
+        <div id="view-vivivi" class="hidden animate-fade-in">
+            <div class="glass-panel p-6 border-vivivi-gold/20 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gray-800">
+                    <div id="quiz-progress" class="h-full bg-vivivi-gold w-0 transition-all duration-500 shadow-neon-gold"></div>
+                </div>
+                
+                <h2 class="text-xl font-tech text-vivivi-gold mb-2 mt-2 drop-shadow-md">Códex Oráculo</h2>
+                <p class="text-xs text-gray-400 font-mono mb-6">// CALIBRANDO SENSORES DE ALMA</p>
+
+                <div id="quiz-container">
+                    <h3 id="question-text" class="text-lg font-medium text-white mb-6 min-h-[3rem]">Carregando...</h3>
+                    <div id="options-container" class="space-y-3"></div>
+                </div>
+
+                <div id="result-container" class="hidden text-center py-4">
+                    <div class="w-32 h-32 mx-auto rounded-full bg-gradient-to-tr from-vivivi-gold to-transparent p-[1px] mb-4 animate-spin-slow">
+                        <div class="w-full h-full rounded-full bg-black/80 flex items-center justify-center backdrop-blur-sm">
+                            <i class="fa-solid fa-crown text-4xl text-vivivi-gold"></i>
+                        </div>
+                    </div>
+                    <h2 id="res-arch" class="text-3xl font-serif text-white mb-2"></h2>
+                    <p id="res-aroma" class="text-sm text-vivivi-tiffany font-bold uppercase tracking-widest mb-6"></p>
+                    
+                    <button onclick="sys.openHaskiAction()" class="btn-tech w-full py-3 rounded-xl bg-gradient-to-r from-vivivi-tiffany/20 to-vivivi-rose/20 border border-white/10 text-white font-tech text-xs uppercase tracking-wider hover:border-white/30">
+                        Ativar Haski AI
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Vault (Code Editor Upgraded) -->
+        <div id="view-vault" class="hidden animate-fade-in">
+            <div class="glass-panel p-1 border-vivivi-tiffany/20">
+                <div class="bg-black/40 rounded-t-[18px] p-3 flex justify-between items-center border-b border-white/5">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="terminal" class="w-4 h-4 text-vivivi-tiffany"></i>
+                        <span class="font-code text-xs text-vivivi-tiffany font-bold">VAULT_EDITOR_V3</span>
+                    </div>
+                    <div class="flex gap-1">
+                        <div class="w-2 h-2 rounded-full bg-red-500/50"></div>
+                        <div class="w-2 h-2 rounded-full bg-yellow-500/50"></div>
+                        <div class="w-2 h-2 rounded-full bg-green-500/50"></div>
+                    </div>
+                </div>
+                
+                <div class="p-4">
+                    <textarea id="vault-input" class="w-full h-48 bg-transparent border-none text-xs font-code text-gray-300 focus:outline-none resize-none placeholder-gray-700" placeholder="// Insira fragmentos de código, notas ou segredos..."></textarea>
+                </div>
+                
+                <div class="p-3 border-t border-white/5 flex gap-2">
+                    <button onclick="sys.saveVault()" class="flex-1 py-2 rounded-lg bg-vivivi-tiffany/10 border border-vivivi-tiffany/20 text-vivivi-tiffany font-bold text-[10px] hover:bg-vivivi-tiffany/20 transition uppercase tracking-wider">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> Gravar
+                    </button>
+                    <button class="flex-1 py-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 font-bold text-[10px] hover:bg-white/10 transition uppercase tracking-wider">
+                        <i class="fa-solid fa-play mr-1"></i> Compilar
+                    </button>
+                </div>
+            </div>
+            
+            <div id="vault-logs" class="mt-4 font-code text-[9px] text-gray-500 px-2">
+                > System Ready...<br>
+                > Waiting for input...
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- DATA ---
+        const QUESTIONS = [
+            { t: "O que sua alma pede hoje?", o: [{l:"Paz & Harmonia", v:"innocent"}, {l:"Poder & Glória", v:"ruler"}, {l:"Liberdade Total", v:"explorer"}] },
+            { t: "Em meio ao caos, você...", o: [{l:"Assume o comando", v:"ruler"}, {l:"Busca entender", v:"sage"}, {l:"Cria uma saída", v:"creator"}] },
+            { t: "Sua maior força:", o: [{l:"Minha Visão", v:"magician"}, {l:"Minha Coragem", v:"hero"}, {l:"Minha Paixão", v:"lover"}] }
+        ];
+
+        // --- SYSTEM CORE ---
+        const sys = {
+            state: {
+                headerOpen: false,
+                safeMode: false,
+                ruralMode: false,
+                qIndex: 0,
+                scores: {}
+            },
+
+            // HEADER LOGIC (CARD EFFECT)
+            toggleHeader: function(e) {
+                if (e && (e.target.closest('.di-nucleus') || e.target.closest('#control-grid'))) return;
+
+                const nav = document.getElementById('main-header');
+                const content = document.getElementById('header-content');
+                
+                this.state.headerOpen = !this.state.headerOpen;
+
+                if (this.state.headerOpen) {
+                    nav.classList.add('expanded');
+                    content.classList.remove('opacity-0', 'translate-y-2');
+                    if(navigator.vibrate) navigator.vibrate(15);
+                } else {
+                    nav.classList.remove('expanded');
+                    content.classList.add('opacity-0', 'translate-y-2');
+                }
+            },
+
+            // GRID LOGIC
+            toggleGrid: function(e) {
+                if(e) e.stopPropagation();
+                const grid = document.getElementById('control-grid');
+                grid.classList.toggle('active');
+                if (grid.classList.contains('active') && this.state.headerOpen) {
+                    this.toggleHeader(); // Close header if grid opens
+                }
+            },
+
+            // NAVIGATION
+            openApp: function(appName) {
+                document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden'));
+                document.getElementById('view-' + appName).classList.remove('hidden');
+                this.toggleGrid();
+
+                if(appName === 'vivivi') this.startQuiz();
+            },
+
+            // MODES
+            toggleMode: function(mode) {
+                const body = document.body;
+                if (mode === 'safe') {
+                    this.state.safeMode = !this.state.safeMode;
+                    body.classList.toggle('safe-mode');
+                    this.updateBtn('btn-safe', this.state.safeMode, 'bg-vivivi-rose', 'border-vivivi-rose');
+                }
+                if (mode === 'rural') {
+                    this.state.ruralMode = !this.state.ruralMode;
+                    body.classList.toggle('rural-mode');
+                    this.updateBtn('btn-rural', this.state.ruralMode, 'bg-vivivi-tiffany', 'border-vivivi-tiffany');
+                }
+            },
+
+            updateBtn: function(id, active, colorClass, borderClass) {
+                const btn = document.getElementById(id);
+                const dot = btn.querySelector('div');
+                if (active) {
+                    btn.className = `w-10 h-5 rounded-full relative transition-all border ${colorClass} ${borderClass}`;
+                    dot.style.transform = 'translateX(20px)';
+                    dot.style.backgroundColor = '#fff';
+                } else {
+                    btn.className = 'w-10 h-5 rounded-full bg-gray-800 relative transition-all border border-gray-600';
+                    dot.style.transform = 'translateX(0)';
+                    dot.style.backgroundColor = '#9ca3af';
+                }
+            },
+
+            // QUIZ LOGIC
+            startQuiz: function() {
+                this.state.qIndex = 0;
+                this.state.scores = {};
+                document.getElementById('quiz-container').classList.remove('hidden');
+                document.getElementById('result-container').classList.add('hidden');
+                this.renderQuestion();
+            },
+
+            renderQuestion: function() {
+                const q = QUESTIONS[this.state.qIndex];
+                document.getElementById('question-text').innerText = q.t;
+                document.getElementById('quiz-progress').style.width = `${((this.state.qIndex) / QUESTIONS.length) * 100}%`;
+                
+                const c = document.getElementById('options-container');
+                c.innerHTML = '';
+                q.o.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left p-4 rounded-xl btn-tech text-sm font-medium text-gray-300 hover:text-white flex justify-between items-center group";
+                    btn.innerHTML = `<span>${opt.l}</span> <i class="fa-solid fa-chevron-right text-gray-600 group-hover:text-vivivi-gold transition"></i>`;
+                    btn.onclick = () => {
+                        this.state.scores[opt.v] = (this.state.scores[opt.v] || 0) + 1;
+                        this.nextQuestion();
+                    };
+                    c.appendChild(btn);
+                });
+            },
+
+            nextQuestion: function() {
+                this.state.qIndex++;
+                if (this.state.qIndex < QUESTIONS.length) {
+                    this.renderQuestion();
+                } else {
+                    this.showResult();
+                }
+            },
+
+            showResult: function() {
+                document.getElementById('quiz-container').classList.add('hidden');
+                document.getElementById('result-container').classList.remove('hidden');
+                document.getElementById('quiz-progress').style.width = '100%';
+                
+                // Simples logic for demo
+                const winner = Object.keys(this.state.scores).reduce((a, b) => this.state.scores[a] > this.state.scores[b] ? a : b, "hero");
+                
+                const map = {
+                    innocent: "O Inocente", ruler: "O Governante", explorer: "O Explorador",
+                    sage: "O Sábio", creator: "O Criador", magician: "O Mago", hero: "O Herói", lover: "O Amante"
+                };
+                
+                document.getElementById('res-arch').innerText = map[winner] || "O Arquétipo";
+                document.getElementById('res-aroma').innerText = "Aroma da Frequência Pura";
+            },
+
+            openHaskiAction: function() {
+                window.open('https://chat.openai.com', '_blank');
+            },
+
+            saveVault: function() {
+                const val = document.getElementById('vault-input').value;
+                if(!val) return;
+                const logs = document.getElementById('vault-logs');
+                logs.innerHTML += `<br>> Data saved to local core [${val.length} bytes]`;
+                logs.scrollTop = logs.scrollHeight;
+                // Fake save logic
+                localStorage.setItem('dual_vault_temp', val);
+            }
+        };
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
+

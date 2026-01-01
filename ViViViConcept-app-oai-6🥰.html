@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <title>ViViVi // DUAL — System Core (Nucleus Panel)</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&family=Playfair+Display:wght@700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* --- Base visual (mantive estilo ViViVi / Glassmorphism) --- */
+        :root{
+            --bg1: #1a1c4b;
+            --bg2: #050505;
+            --viv-gold: #ffd700;
+            --viv-rose: #ff007f;
+            --viv-tiffany: #00f6ff;
+        }
+        html,body{height:100%;margin:0;padding:0;font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+        body{
+            background: radial-gradient(circle at top, var(--bg1), var(--bg2));
+            color:#fff; -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+        }
+        .glass-panel{
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius:14px;
+        }
+        .glass-btn{ padding:10px 14px; border-radius:12px; background:linear-gradient(145deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.06)}
+        .di{ --di-size:48px; --di-stroke:2px; position:relative; width:var(--di-size); height:var(--di-size); margin:0 auto; cursor:pointer}
+        .di .ring{position:absolute; inset:0; border:var(--di-stroke) solid color-mix(in oklab, var(--viv-tiffany) 60%, var(--viv-rose) 40%); border-radius:50%; animation:di-spin 6s linear infinite}
+        .di .stroke{position:absolute; left:50%; top:50%; width:62%; height:var(--di-stroke); background:linear-gradient(90deg,var(--viv-tiffany),var(--viv-rose)); transform:translate(-50%,-50%); border-radius:999px; animation:di-breathe 2.4s ease-in-out infinite}
+        @keyframes di-spin{to{transform:rotate(360deg)}}
+        @keyframes di-breathe{0%,100%{opacity:.95}50%{opacity:1;width:76%}}
+        
+        /* header nav */
+        nav { position:fixed; top:0; left:50%; transform:translateX(-50%); width:100%; max-width:720px; z-index:60; padding:14px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+        .nav-inner{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px; background:rgba(5,5,5,0.6); padding:10px 18px; border-radius:18px; border:1px solid rgba(255,255,255,0.05); backdrop-filter: blur(6px); }
+        .brand{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; }
+        .brand h1{ font-family:"Playfair Display",serif; margin:0; font-size:18px; letter-spacing:0.06em }
+        .brand span{ font-size:9px; color:rgba(255,255,255,0.55); letter-spacing:0.28em; }
+
+        /* nucleus panel (the new feature) */
+        #nucleus-panel {
+            position: fixed;
+            top: 68px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-6px);
+            width: 340px;
+            max-width: calc(100% - 28px);
+            z-index: 80;
+            display: none;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        #nucleus-panel.active { display:block; animation: slideDown .22s ease-out; }
+        @keyframes slideDown { from{ opacity:0; transform: translateX(-50%) translateY(-8px) scale(.98)} to{ opacity:1; transform:translateX(-50%) translateY(0) scale(1)} }
+
+        #nucleus-panel .panel-header { display:flex; align-items:center; gap:12px; padding:12px 14px; }
+        .avatar { width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,var(--viv-rose),var(--viv-tiffany)); display:flex; align-items:center; justify-content:center; font-family: 'JetBrains Mono', monospace; font-weight:700; color:#030307 }
+        .user-meta { flex:1 }
+        .user-meta .name { font-weight:700; font-size:0.95rem }
+        .user-meta .sub { font-size:11px; color:rgba(255,255,255,0.6) }
+
+        .panel-body{ padding:10px 14px 14px 14px; display:grid; gap:10px }
+        .row { display:flex; align-items:center; justify-content:space-between; gap:8px }
+        .switch { display:inline-flex; align-items:center; gap:8px; }
+        .switch input[type=checkbox]{ width:36px; height:20px; appearance:none; background:#111; border-radius:12px; position:relative; outline:none; cursor:pointer; border:1px solid rgba(255,255,255,0.05) }
+        .switch input[type=checkbox]::after{ content:""; width:16px; height:16px; background:#fff; border-radius:50%; position:relative; left:2px; transition:all .18s ease}
+        .switch input[type=checkbox]:checked{ background: linear-gradient(90deg,var(--viv-tiffany),var(--viv-rose)) }
+        .switch input[type=checkbox]:checked::after{ transform: translateX(16px) }
+
+        .small-btn{ padding:8px 10px; border-radius:10px; font-size:12px; border:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.02); cursor:pointer }
+        .mode-select{ width:100%; padding:8px; border-radius:10px; background:#000; border:1px solid rgba(255,255,255,0.04); color:#fff; font-size:13px }
+
+        .stories { display:flex; flex-direction:column; gap:8px; max-height:120px; overflow:auto; padding-right:6px; }
+        .story-item { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px; border-radius:10px; background:rgba(255,255,255,0.02); font-size:13px }
+        .restore-nucleus { position: fixed; left: 14px; bottom: 18px; z-index:100; display:none; }
+        .restore-nucleus.show { display:block; }
+        .restore-nucleus .btn { padding:10px 12px; border-radius:12px; background:linear-gradient(90deg,var(--viv-tiffany),var(--viv-rose)); color:#000; font-weight:700; border:none; cursor:pointer }
+
+        /* minimize everything */
+        .minimized .uno-main, .minimized main { opacity:0; transform: scale(.995); pointer-events:none; transition: all .18s ease; }
+        /* responsive */
+        @media (max-width:420px){ #nucleus-panel{ width:92% } nav{ padding:10px } }
+    </style>
+</head>
+<body class="font-sans">
+
+    <!-- NAV / HEADER -->
+    <nav>
+        <div class="nav-inner max-w-md mx-auto w-full">
+            <div class="brand">
+                <h1 class="font-serif text-[16px]">ViViVi</h1>
+                <span class="text-[9px] uppercase tracking-wider">Dual Core</span>
+            </div>
+
+            <!-- Nucleus button (bolinha) -->
+            <div style="position:relative; display:flex; align-items:center; gap:12px">
+                <div id="nucleus-container" onclick="app.toggleNucleusPanel(event)" title="Abrir painel do Núcleo">
+                    <div id="nucleus-btn" class="di" aria-hidden="true">
+                        <div class="ring"></div>
+                        <div class="stroke"></div>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:8px; align-items:center">
+                    <button onclick="app.switchView('quiz')" id="nav-quiz" class="text-white/70 hover:text-white transition"><i class="fa-solid fa-eye"></i></button>
+                    <button onclick="app.switchView('vault')" id="nav-vault" class="text-white/70 hover:text-white transition"><i data-lucide="box"></i></button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Nucleus Panel -->
+    <div id="nucleus-panel" class="glass-panel" aria-hidden="true">
+        <div class="panel-header">
+            <div class="avatar" id="avatar-initial">K</div>
+            <div class="user-meta">
+                <div contenteditable="true" id="nucleus-username" class="name" style="outline:none">Operador</div>
+                <div class="sub">Clique no nome para editar. As mudanças são salvas automaticamente.</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+                <button class="small-btn" id="btn-hide-everything" title="Minimizar tudo" onclick="app.toggleMinimize()">Ocultar tudo</button>
+                <button class="small-btn" id="btn-close-panel" onclick="app.hideNucleusPanel()">Fechar</button>
+            </div>
+        </div>
+
+        <div class="panel-body">
+            <div class="row">
+                <div style="display:flex;flex-direction:column">
+                    <div style="font-weight:700;font-size:13px">Ativar</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,0.6)">Recursos rápidos</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+                    <label class="switch"><input type="checkbox" id="toggle-oracle" onchange="app.setFeature('oracle',this.checked)"><span style="font-size:12px;color:rgba(255,255,255,0.7); margin-left:8px">Oráculo</span></label>
+                    <label class="switch"><input type="checkbox" id="toggle-vault" onchange="app.setFeature('vault',this.checked)"><span style="font-size:12px;color:rgba(255,255,255,0.7); margin-left:8px">Vault</span></label>
+                    <label class="switch"><input type="checkbox" id="toggle-ascii" onchange="app.setFeature('ascii',this.checked)"><span style="font-size:12px;color:rgba(255,255,255,0.7); margin-left:8px">ASCII</span></label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div style="display:flex;flex-direction:column">
+                    <div style="font-weight:700;font-size:13px">Modo</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,0.6)">Escolha a sintonia</div>
+                </div>
+                <select id="mode-select" class="mode-select" onchange="app.setMode(this.value)">
+                    <option value="normal">Normal</option>
+                    <option value="rural">Rural</option>
+                    <option value="safe">Safe</option>
+                </select>
+            </div>
+
+            <div class="row">
+                <div style="display:flex;flex-direction:column;width:100%">
+                    <div style="font-weight:700;font-size:13px;margin-bottom:6px">Stories do Usuário</div>
+                    <div style="display:flex; gap:8px; margin-bottom:6px">
+                        <input id="story-input" placeholder="Adicionar story..." style="flex:1;padding:8px;border-radius:10px;background:#000;border:1px solid rgba(255,255,255,0.04);color:#fff;font-size:13px"/>
+                        <button class="small-btn" onclick="app.addStory()">Adicionar</button>
+                    </div>
+
+                    <div class="stories" id="stories-list"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div style="display:flex;flex-direction:column">
+                    <div style="font-weight:700;font-size:13px">Bolinha (núcleo)</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,0.6)">Controle visual do núcleo</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+                    <label class="switch"><input type="checkbox" id="toggle-hide-nucleus" onchange="app.setHideNucleus(this.checked)"><span style="font-size:12px;color:rgba(255,255,255,0.7); margin-left:8px">Ocultar bolinha</span></label>
+                    <button class="small-btn" onclick="app.quickRestoreDefaults()">Restaurar Padrões</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- botão restaurar nucleus (aparece quando bolinha oculta) -->
+    <div class="restore-nucleus" id="restore-nucleus">
+        <button class="btn" onclick="app.restoreNucleus()">RESTORE NUCLEUS</button>
+    </div>
+
+    <!-- MAIN app (mantive a sua estrutura de seções principal para compatibilidade) -->
+    <main id="main-app" class="uno-main max-w-md mx-auto mt-28 px-4 pb-16">
+        <!-- Landing / Quiz / Vault sections (copiei a estrutura mínima para manter compatibilidade com o seu app) -->
+        <section id="view-landing" class="h-full flex flex-col justify-center items-center text-center p-6 animate-fade-in mt-10">
+            <div class="relative mb-8">
+                <div class="absolute inset-0 bg-vivivi-rose opacity-20 blur-3xl rounded-full"></div>
+                <div class="coblux scale-[2]">
+                    <div class="ring"></div>
+                </div>
+            </div>
+            <h2 class="text-3xl font-serif text-white mb-2">Dual Infodose</h2>
+            <p class="text-xs text-gray-400 uppercase tracking-widest mb-10">Sintonize & Codifique</p>
+            <div class="grid grid-cols-1 gap-4 w-full">
+                <button onclick="app.switchView('quiz')" class="glass-btn p-5 rounded-2xl flex items-center justify-between group">
+                    <div class="text-left">
+                        <div class="text-vivivi-gold font-serif text-lg">Oráculo</div>
+                        <div class="text-[10px] text-gray-400">Descubra seu Arquétipo</div>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-vivivi-gold opacity-50 group-hover:opacity-100 transition"></i>
+                </button>
+                <button onclick="app.switchView('vault')" class="glass-btn p-5 rounded-2xl flex items-center justify-between group">
+                    <div class="text-left">
+                        <div class="text-vivivi-tiffany font-code text-lg">Vault // Uno</div>
+                        <div class="text-[10px] text-gray-400">Editor & Runtime</div>
+                    </div>
+                    <i data-lucide="code" class="text-vivivi-tiffany opacity-50 group-hover:opacity-100 transition"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Minimal Vault & Quiz placeholders so buttons still work -->
+        <section id="view-quiz" class="hidden p-6"></section>
+        <section id="view-vault" class="hidden p-6"></section>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        const NAMESPACE = 'vivivi_nucleus_v1';
+        const LS = {
+            user: localStorage.getItem(`${NAMESPACE}_user`) || '',
+            hideNucleus: localStorage.getItem(`${NAMESPACE}_hideNucleus`) === 'true',
+            features: JSON.parse(localStorage.getItem(`${NAMESPACE}_features`) || '{"oracle":true,"vault":true,"ascii":false}'),
+            mode: localStorage.getItem(`${NAMESPACE}_mode`) || 'normal',
+            stories: JSON.parse(localStorage.getItem(`${NAMESPACE}_stories`) || '[]'),
+            minimized: localStorage.getItem(`${NAMESPACE}_minimized`) === 'true'
+        };
+
+        const app = {
+            init() {
+                // init UI values
+                this.bindElements();
+                this.applyInitialState();
+                this.attachUsernameSave();
+                this.renderStories();
+            },
+
+            bindElements() {
+                this.panel = document.getElementById('nucleus-panel');
+                this.nucleusBtn = document.getElementById('nucleus-btn');
+                this.nucleusContainer = document.getElementById('nucleus-container');
+                this.usernameEl = document.getElementById('nucleus-username');
+                this.avatarEl = document.getElementById('avatar-initial');
+                this.restoreBtn = document.getElementById('restore-nucleus');
+                this.toggleHideInput = document.getElementById('toggle-hide-nucleus');
+                this.toggleOracle = document.getElementById('toggle-oracle');
+                this.toggleVault = document.getElementById('toggle-vault');
+                this.toggleAscii = document.getElementById('toggle-ascii');
+                this.modeSelect = document.getElementById('mode-select');
+                this.mainApp = document.getElementById('main-app');
+            },
+
+            applyInitialState() {
+                // user
+                if(LS.user){ this.usernameEl.innerText = LS.user; this.avatarEl.innerText = this.initialFrom(LS.user); document.getElementById('greet')?.innerText && (document.getElementById('greet').innerText = `Olá, ${LS.user}`) }
+                // hide nucleus
+                if(LS.hideNucleus){ this.hideNucleus(true) }
+                // features
+                this.toggleOracle.checked = !!LS.features.oracle;
+                this.toggleVault.checked = !!LS.features.vault;
+                this.toggleAscii.checked = !!LS.features.ascii;
+                // mode
+                this.modeSelect.value = LS.mode;
+                // minimized
+                if(LS.minimized){ document.body.classList.add('minimized') }
+                // attach click-away to close panel
+                document.addEventListener('click', (e)=> {
+                    if(!this.panel) return;
+                    if(this.panel.classList.contains('active')){
+                        const inside = this.panel.contains(e.target) || this.nucleusContainer.contains(e.target);
+                        if(!inside) this.hideNucleusPanel();
+                    }
+                });
+            },
+
+            initialFrom(name){
+                if(!name) return 'K';
+                return name.trim().charAt(0).toUpperCase();
+            },
+
+            toggleNucleusPanel(e) {
+                e?.stopPropagation();
+                if(LS.hideNucleus) return; // if hidden, do nothing here (restore button handles)
+                if(this.panel.classList.contains('active')) this.hideNucleusPanel();
+                else this.showNucleusPanel();
+            },
+
+            showNucleusPanel(){
+                this.panel.classList.add('active');
+                this.panel.setAttribute('aria-hidden','false');
+            },
+
+            hideNucleusPanel(){
+                this.panel.classList.remove('active');
+                this.panel.setAttribute('aria-hidden','true');
+            },
+
+            setFeature(key, val){
+                LS.features[key] = !!val;
+                localStorage.setItem(`${NAMESPACE}_features`, JSON.stringify(LS.features));
+                // optional quick visual / action
+                if(key === 'oracle' && val) this.switchView('quiz');
+                if(key === 'vault' && val) this.switchView('vault');
+            },
+
+            setMode(value){
+                LS.mode = value;
+                localStorage.setItem(`${NAMESPACE}_mode`, LS.mode);
+                // small visual feedback:
+                this.speak(`Modo ${value} ativado`);
+            },
+
+            setHideNucleus(checked){
+                LS.hideNucleus = !!checked;
+                localStorage.setItem(`${NAMESPACE}_hideNucleus`, LS.hideNucleus);
+                this.hideNucleus(LS.hideNucleus);
+            },
+
+            hideNucleus(forceHide){
+                const cont = document.getElementById('nucleus-container');
+                if(forceHide){
+                    cont.style.display = 'none';
+                    this.restoreBtn.classList.add('show');
+                } else {
+                    cont.style.display = '';
+                    this.restoreBtn.classList.remove('show');
+                }
+            },
+
+            restoreNucleus(){
+                LS.hideNucleus = false;
+                localStorage.setItem(`${NAMESPACE}_hideNucleus`, 'false');
+                this.hideNucleus(false);
+            },
+
+            attachUsernameSave(){
+                // save on blur + input throttle
+                let t;
+                this.usernameEl.addEventListener('input', (e)=>{
+                    clearTimeout(t);
+                    t = setTimeout(()=> {
+                        const v = this.usernameEl.innerText.trim() || 'Operador';
+                        LS.user = v;
+                        localStorage.setItem(`${NAMESPACE}_user`, v);
+                        this.avatarEl.innerText = this.initialFrom(v);
+                        // propagate to other UI (if exist)
+                        const g = document.getElementById('greet'); if(g) g.innerText = `Olá, ${v}`;
+                    }, 400);
+                });
+            },
+
+            addStory(){
+                const input = document.getElementById('story-input');
+                const text = input.value.trim();
+                if(!text) return;
+                LS.stories.unshift({id: Date.now(), text});
+                localStorage.setItem(`${NAMESPACE}_stories`, JSON.stringify(LS.stories));
+                input.value = '';
+                this.renderStories();
+            },
+
+            renderStories(){
+                const list = document.getElementById('stories-list');
+                list.innerHTML = '';
+                if(!LS.stories.length){
+                    list.innerHTML = `<div style="opacity:.5; font-size:13px">Sem stories — adicione algo curto (ideias, notas, lembranças).</div>`;
+                    return;
+                }
+                LS.stories.forEach(s => {
+                    const item = document.createElement('div');
+                    item.className = 'story-item';
+                    item.innerHTML = `<div style="flex:1">${s.text}</div>
+                                      <div style="display:flex;gap:6px">
+                                        <button class="small-btn" style="padding:6px 8px" onclick="app.pinStory(${s.id})">Pin</button>
+                                        <button class="small-btn" style="padding:6px 8px" onclick="app.removeStory(${s.id})">Remover</button>
+                                      </div>`;
+                    list.appendChild(item);
+                });
+            },
+
+            pinStory(id){
+                const sIdx = LS.stories.findIndex(x=>x.id===id);
+                if(sIdx === -1) return;
+                const [st] = LS.stories.splice(sIdx,1);
+                LS.stories.unshift(st);
+                localStorage.setItem(`${NAMESPACE}_stories`, JSON.stringify(LS.stories));
+                this.renderStories();
+                this.speak('Story fixado');
+            },
+
+            removeStory(id){
+                LS.stories = LS.stories.filter(s=>s.id!==id);
+                localStorage.setItem(`${NAMESPACE}_stories`, JSON.stringify(LS.stories));
+                this.renderStories();
+            },
+
+            quickRestoreDefaults(){
+                // small quick restore
+                LS.features = {oracle:true,vault:true,ascii:false};
+                LS.mode = 'normal';
+                LS.hideNucleus = false;
+                LS.minimized = false;
+                localStorage.setItem(`${NAMESPACE}_features`, JSON.stringify(LS.features));
+                localStorage.setItem(`${NAMESPACE}_mode`, LS.mode);
+                localStorage.setItem(`${NAMESPACE}_hideNucleus`, 'false');
+                localStorage.setItem(`${NAMESPACE}_minimized`, 'false');
+                this.toggleOracle.checked = LS.features.oracle;
+                this.toggleVault.checked = LS.features.vault;
+                this.toggleAscii.checked = LS.features.ascii;
+                this.modeSelect.value = LS.mode;
+                this.restoreNucleus();
+                document.body.classList.remove('minimized');
+                this.speak('Padrões restaurados');
+            },
+
+            toggleMinimize(){
+                LS.minimized = !LS.minimized;
+                localStorage.setItem(`${NAMESPACE}_minimized`, LS.minimized ? 'true' : 'false');
+                document.body.classList.toggle('minimized', LS.minimized);
+                this.speak(LS.minimized ? 'Interface minimizada' : 'Interface restaurada');
+            },
+
+            switchView(view){
+                // simple placeholder: toggles the main content sections (landing/quiz/vault)
+                document.querySelectorAll('main section').forEach(s => s.classList.add('hidden'));
+                const target = document.getElementById('view-' + view);
+                if(target) target.classList.remove('hidden');
+                // feedback
+                this.hideNucleusPanel();
+            },
+
+            speak(text){
+                if(!window.speechSynthesis) return;
+                try{
+                    const u = new SpeechSynthesisUtterance(text);
+                    u.lang = 'pt-BR'; u.rate = 1.05;
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(u);
+                }catch(e){}
+            }
+        };
+
+        // restore visible state at load
+        window.addEventListener('DOMContentLoaded', ()=> app.init());
+    </script>
+</body>
+</html>

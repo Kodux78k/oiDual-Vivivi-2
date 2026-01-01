@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <title>ViViVi // DUAL — System Core (Nucleus Panel) — UPGRADE</title>
+
+  <!-- Tailwind + Fonts + Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&family=Playfair+Display:wght@700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root{
+      --bg1:#1a1c4b; --bg2:#050505; --viv-gold:#ffd700; --viv-rose:#ff007f; --viv-tiffany:#00f6ff;
+    }
+    html,body{height:100%;margin:0;padding:0;font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+    body{
+      background: radial-gradient(circle at top, var(--bg1), var(--bg2));
+      color:#fff; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* --- Header + Card (mantido e refinado) --- */
+    nav{ position:fixed; top:10px; left:50%; transform:translateX(-50%); width:100%; max-width:760px; z-index:80; padding:10px; }
+    .nav-inner{
+      width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px;
+      background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.55));
+      padding:12px 18px; border-radius:18px; border:1px solid rgba(255,255,255,0.05); backdrop-filter: blur(6px);
+    }
+    .brand h1{ font-family:"Playfair Display",serif; margin:0; font-size:18px; letter-spacing:0.06em }
+    .brand span{ font-size:9px; color:rgba(255,255,255,0.6); letter-spacing:0.28em }
+
+    .di { --di-size:48px; --di-stroke:2px; width:var(--di-size); height:var(--di-size); position:relative; cursor:pointer; }
+    .di .ring{ position:absolute; inset:0; border:var(--di-stroke) solid color-mix(in oklab, var(--viv-tiffany) 60%, var(--viv-rose) 40%); border-radius:50%; animation:spin 5.5s linear infinite }
+    .di .core{ position:absolute; left:50%; top:50%; width:56%; height:56%; transform:translate(-50%,-50%); border-radius:50%; background:linear-gradient(135deg,var(--viv-tiffany),var(--viv-rose)); box-shadow:0 6px 22px rgba(0,0,0,0.6) }
+    @keyframes spin{ to{ transform:rotate(360deg) } }
+
+    /* Nucleus panel */
+    #nucleus-panel { position: fixed; top:86px; left:50%; transform:translateX(-50%); width:360px; max-width:94%; z-index:90; display:none; border-radius:14px; overflow:hidden; box-shadow:0 18px 60px rgba(0,0,0,0.6)}
+    #nucleus-panel.active{ display:block; animation:slideDown .18s ease-out }
+    @keyframes slideDown { from { opacity:0; transform:translateX(-50%) translateY(-8px) scale(.995) } to { opacity:1; transform:translateX(-50%) translateY(0) scale(1) } }
+
+    .glass-panel{ background: rgba(255,255,255,0.03); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border:1px solid rgba(255,255,255,0.06); }
+    .panel-header{ display:flex; gap:12px; align-items:center; padding:12px 14px; }
+    .avatar{ width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:800; font-family:'JetBrains Mono'; color:#030307; background:linear-gradient(135deg,var(--viv-rose),var(--viv-tiffany)); }
+    .user-meta .name{ font-weight:700; font-size:0.95rem }
+    .user-meta .sub{ font-size:11px; color:rgba(255,255,255,0.6) }
+
+    .panel-body{ padding:10px 14px 14px 14px; display:grid; gap:10px }
+    .row{ display:flex; align-items:center; justify-content:space-between; gap:8px }
+    .switch input[type=checkbox]{ width:36px; height:20px; appearance:none; background:#111; border-radius:12px; border:1px solid rgba(255,255,255,0.05); position:relative; cursor:pointer }
+    .switch input[type=checkbox]::after{ content:""; width:16px; height:16px; background:#fff; border-radius:50%; position:relative; left:2px; top:2px; transition:all .18s ease }
+    .switch input[type=checkbox]:checked{ background: linear-gradient(90deg,var(--viv-tiffany),var(--viv-rose)) }
+    .switch input[type=checkbox]:checked::after{ transform: translateX(16px) }
+
+    .small-btn{ padding:8px 10px; border-radius:10px; font-size:12px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02); cursor:pointer }
+    .mode-select{ width:100%; padding:8px; border-radius:10px; background:#000; border:1px solid rgba(255,255,255,0.04); color:#fff; font-size:13px }
+
+    /* Stories carousel */
+    .stories { display:flex; align-items:center; gap:8px; }
+    .stories-window{ flex:1; overflow:hidden; border-radius:10px; background:rgba(255,255,255,0.02); padding:8px; display:flex; align-items:center; gap:8px }
+    .story-slide{ min-width:220px; display:flex; gap:10px; align-items:center }
+    .story-text{ font-size:13px; color:rgba(255,255,255,0.92) }
+    .story-meta{ font-size:11px; color:rgba(255,255,255,0.55) }
+
+    .restore-nucleus{ position:fixed; left:16px; bottom:18px; z-index:100; display:none }
+    .restore-nucleus.show{ display:block }
+    .restore-nucleus .btn{ padding:10px 12px; border-radius:12px; background:linear-gradient(90deg,var(--viv-tiffany),var(--viv-rose)); color:#000; font-weight:700; border:none; cursor:pointer }
+
+    /* minimized */
+    .minimized main, .minimized .footer { opacity:0; transform:scale(.995); pointer-events:none; transition:all .18s linear }
+
+    /* main area */
+    main{ margin-top:120px; max-width:760px; width:100%; padding:20px; margin-left:auto; margin-right:auto; }
+    .card{ border-radius:14px; padding:18px; }
+
+    /* small responsiveness */
+    @media (max-width:420px){
+      #nucleus-panel{ width:94% }
+      .story-slide{ min-width:180px }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <nav>
+    <div class="nav-inner glass-panel">
+      <div class="brand">
+        <h1 class="font-serif">ViViVi</h1>
+        <span class="text-[9px] uppercase tracking-wider">Dual Core</span>
+      </div>
+
+      <!-- nucleus (bolinha) -->
+      <div style="display:flex;align-items:center;gap:14px">
+        <div id="nucleus-container" title="Abrir painel do Núcleo">
+          <div id="nucleus-btn" class="di" aria-hidden="true"></div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center">
+          <button id="btn-nav-oracle" class="text-white/80 hover:text-white transition" title="Oráculo (abrir/fechar)"><i class="fa-solid fa-eye"></i></button>
+          <button id="btn-nav-vault" class="text-white/80 hover:text-white transition" title="Vault (abrir/fechar)"><i data-lucide="box"></i></button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- NUCLEUS PANEL -->
+  <div id="nucleus-panel" class="glass-panel" aria-hidden="true">
+    <div class="panel-header">
+      <div id="avatar-initial" class="avatar">K</div>
+      <div class="user-meta">
+        <div contenteditable="true" id="nucleus-username" class="name" style="outline:none">Operador</div>
+        <div class="sub">Clique no nome para editar — salvo automaticamente.</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button id="btn-minimize" class="small-btn" title="Ocultar tudo">Ocultar tudo</button>
+        <button id="btn-close" class="small-btn">Fechar</button>
+      </div>
+    </div>
+
+    <div class="panel-body">
+      <div class="row">
+        <div>
+          <div style="font-weight:700;font-size:13px">Ativar</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.6)">Recursos rápidos</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+          <label class="switch"><input id="toggle-oracle" type="checkbox"><span style="margin-left:8px">Oráculo</span></label>
+          <label class="switch"><input id="toggle-vault" type="checkbox"><span style="margin-left:8px">Vault</span></label>
+          <label class="switch"><input id="toggle-ascii" type="checkbox"><span style="margin-left:8px">ASCII</span></label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <div style="font-weight:700;font-size:13px">Modo</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.6)">Sintonia</div>
+        </div>
+        <select id="mode-select" class="mode-select">
+          <option value="normal">Normal</option>
+          <option value="rural">Rural</option>
+          <option value="safe">Safe</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <div style="width:100%">
+          <div style="font-weight:700;font-size:13px;margin-bottom:6px">Stories</div>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input id="story-input" placeholder="Adicionar story..." style="flex:1;padding:8px;border-radius:10px;background:#000;border:1px solid rgba(255,255,255,0.04);color:#fff;font-size:13px"/>
+            <button id="btn-add-story" class="small-btn">Adicionar</button>
+          </div>
+
+          <div class="stories">
+            <button id="story-prev" class="small-btn">‹</button>
+            <div class="stories-window" id="stories-window" aria-live="polite"></div>
+            <button id="story-next" class="small-btn">›</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <div style="font-weight:700;font-size:13px">Bolinha (núcleo)</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.6)">Controle visual</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <label class="switch"><input id="toggle-hide-nucleus" type="checkbox"><span style="margin-left:8px">Ocultar bolinha</span></label>
+          <button id="btn-restore-defaults" class="small-btn">Restaurar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESTORE BUTTON (quando bolinha está oculta) -->
+  <div class="restore-nucleus" id="restore-nucleus">
+    <button id="btn-restore-nucleus" class="btn" style="padding:10px 14px;border-radius:12px;background:linear-gradient(90deg,var(--viv-tiffany),var(--viv-rose));color:#000;font-weight:700;border:none;cursor:pointer;display:none">RESTORE NUCLEUS</button>
+  </div>
+
+  <!-- MAIN (conteúdo do app) -->
+  <main>
+    <div id="view-landing" class="card glass-panel mb-6">
+      <div class="text-center py-12">
+        <p class="font-code text-xs text-vivivi-tiffany animate-pulse">AGUARDANDO ATIVAÇÃO DO NÚCLEO...</p>
+      </div>
+
+      <div class="flex gap-3 justify-center">
+        <button id="quick-open-oracle" class="glass-panel py-3 px-5 rounded text-sm">Abrir Oráculo</button>
+        <button id="quick-open-vault" class="glass-panel py-3 px-5 rounded text-sm">Abrir Vault</button>
+      </div>
+    </div>
+
+    <div id="view-oracle" class="card glass-panel mb-6 hidden">
+      <h3 class="font-serif text-vivivi-rose text-xl mb-3">Oráculo ViViVi</h3>
+      <p class="text-sm text-gray-300 mb-4">Escolha sua frequência...</p>
+      <div class="grid gap-2">
+        <button class="py-3 rounded bg-white/5 hover:bg-vivivi-rose/10 text-left">1 — Expansão e Poder</button>
+        <button class="py-3 rounded bg-white/5 hover:bg-vivivi-rose/10 text-left">2 — Paz e Quietude</button>
+        <button class="py-3 rounded bg-white/5 hover:bg-vivivi-rose/10 text-left">3 — Criação Caótica</button>
+      </div>
+    </div>
+
+    <div id="view-vault" class="card glass-panel mb-6 hidden">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="font-code text-vivivi-tiffany text-lg">VAULT // UNO</h3>
+        <span class="text-[10px] bg-vivivi-tiffany/20 text-vivivi-tiffany px-2 py-1 rounded">V2.0</span>
+      </div>
+      <textarea id="vault-area" class="w-full h-28 bg-black border border-white/10 rounded-lg p-3 text-xs font-code text-gray-300 mb-3" placeholder="// Insira dados ou código HTML..."></textarea>
+      <div class="flex gap-2">
+        <button id="btn-save-vault" class="flex-1 py-2 bg-vivivi-tiffany text-black font-bold text-xs rounded">SALVAR</button>
+        <button id="btn-list-vault" class="flex-1 py-2 bg-white/10 text-white font-bold text-xs rounded">LISTAR</button>
+      </div>
+      <div id="vault-list" class="mt-3"></div>
+    </div>
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    // NAMESPACE localStorage
+    const NS = 'vivivi_nucleus_v2';
+    const store = {
+      user: localStorage.getItem(NS + '_user') || 'Operador',
+      hideNucleus: localStorage.getItem(NS + '_hideNucleus') === 'true',
+      features: JSON.parse(localStorage.getItem(NS + '_features') || '{"oracle":true,"vault":true,"ascii":false}'),
+      mode: localStorage.getItem(NS + '_mode') || 'normal',
+      stories: JSON.parse(localStorage.getItem(NS + '_stories') || '[]'),
+      vault: JSON.parse(localStorage.getItem(NS + '_vault') || '[]'),
+      minimized: localStorage.getItem(NS + '_minimized') === 'true',
+    };
+
+    // ELEMENTS
+    const nucleusBtn = document.getElementById('nucleus-btn');
+    const nucleusPanel = document.getElementById('nucleus-panel');
+    const btnNavOracle = document.getElementById('btn-nav-oracle');
+    const btnNavVault = document.getElementById('btn-nav-vault');
+    const toggleOracle = document.getElementById('toggle-oracle');
+    const toggleVault = document.getElementById('toggle-vault');
+    const toggleAscii = document.getElementById('toggle-ascii');
+    const modeSelect = document.getElementById('mode-select');
+    const toggleHideNucleus = document.getElementById('toggle-hide-nucleus');
+    const restoreNucleusBtn = document.getElementById('btn-restore-nucleus');
+    const restoreNucleusWrap = document.getElementById('restore-nucleus');
+    const avatarInitial = document.getElementById('avatar-initial');
+    const usernameEl = document.getElementById('nucleus-username');
+    const btnClose = document.getElementById('btn-close');
+    const btnMinimize = document.getElementById('btn-minimize');
+
+    const storyInput = document.getElementById('story-input');
+    const btnAddStory = document.getElementById('btn-add-story');
+    const storiesWindow = document.getElementById('stories-window');
+    const storyPrev = document.getElementById('story-prev');
+    const storyNext = document.getElementById('story-next');
+
+    const btnQuickOracle = document.getElementById('quick-open-oracle');
+    const btnQuickVault = document.getElementById('quick-open-vault');
+
+    const viewOracle = document.getElementById('view-oracle');
+    const viewVault = document.getElementById('view-vault');
+    const vaultArea = document.getElementById('vault-area');
+    const btnSaveVault = document.getElementById('btn-save-vault');
+    const vaultList = document.getElementById('vault-list');
+
+    const restoreNucleusVisual = restoreNucleusWrap;
+
+    // small helper
+    function saveStore(){ localStorage.setItem(NS + '_features', JSON.stringify(store.features)); localStorage.setItem(NS + '_mode', store.mode); localStorage.setItem(NS + '_stories', JSON.stringify(store.stories)); localStorage.setItem(NS + '_vault', JSON.stringify(store.vault)); localStorage.setItem(NS + '_user', store.user); localStorage.setItem(NS + '_hideNucleus', store.hideNucleus ? 'true' : 'false'); localStorage.setItem(NS + '_minimized', store.minimized ? 'true' : 'false'); }
+
+    // INIT UI with store
+    function init(){
+      // avatar + username
+      usernameEl.innerText = store.user || 'Operador';
+      avatarInitial.innerText = (store.user||'K').trim().charAt(0).toUpperCase();
+      // toggles
+      toggleOracle.checked = !!store.features.oracle;
+      toggleVault.checked = !!store.features.vault;
+      toggleAscii.checked = !!store.features.ascii;
+      modeSelect.value = store.mode;
+      toggleHideNucleus.checked = !!store.hideNucleus;
+      // hide nucleus if requested
+      applyHideNucleus(store.hideNucleus);
+      // apply features to nav/buttons
+      applyFeatureStateToUI();
+      // stories
+      renderStories();
+      // vault
+      renderVaultList();
+      // minimized
+      if(store.minimized) document.body.classList.add('minimized');
+    }
+
+    // Open/close nucleus panel
+    nucleusBtn.addEventListener('click', (e) => {
+      if(store.hideNucleus) return;
+      nucleusPanel.classList.toggle('active');
+    });
+
+    // close buttons
+    btnClose.addEventListener('click', () => nucleusPanel.classList.remove('active'));
+    btnMinimize.addEventListener('click', () => {
+      store.minimized = !store.minimized;
+      document.body.classList.toggle('minimized', store.minimized);
+      saveStore();
+    });
+
+    // USERNAME editing (auto-save)
+    let usernameTimer;
+    usernameEl.addEventListener('input', (e)=>{
+      clearTimeout(usernameTimer);
+      usernameTimer = setTimeout(()=>{
+        store.user = usernameEl.innerText.trim() || 'Operador';
+        avatarInitial.innerText = store.user.charAt(0).toUpperCase();
+        saveStore();
+      }, 400);
+    });
+
+    // features toggles
+    toggleOracle.addEventListener('change', (e) => { store.features.oracle = e.target.checked; saveStore(); applyFeatureStateToUI(); if(e.target.checked) openOracle(); });
+    toggleVault.addEventListener('change', (e) => { store.features.vault = e.target.checked; saveStore(); applyFeatureStateToUI(); if(e.target.checked) openVault(); });
+    toggleAscii.addEventListener('change', (e) => { store.features.ascii = e.target.checked; saveStore(); });
+
+    // apply feature state to buttons & views
+    function applyFeatureStateToUI(){
+      // nav buttons enable/disable with visual hint
+      btnNavOracle.disabled = !store.features.oracle;
+      btnNavVault.disabled = !store.features.vault;
+      btnNavOracle.style.opacity = store.features.oracle ? '1' : '0.35';
+      btnNavVault.style.opacity = store.features.vault ? '1' : '0.35';
+      // quick buttons
+      btnQuickOracle.disabled = !store.features.oracle;
+      btnQuickVault.disabled = !store.features.vault;
+      btnQuickOracle.style.opacity = store.features.oracle ? '1' : '0.45';
+      btnQuickVault.style.opacity = store.features.vault ? '1' : '0.45';
+      // if feature turned off and view open, close it
+      if(!store.features.oracle) viewOracle.classList.add('hidden');
+      if(!store.features.vault) viewVault.classList.add('hidden');
+    }
+
+    // mode selection
+    modeSelect.addEventListener('change', (e) => {
+      store.mode = e.target.value;
+      applyMode(store.mode);
+      saveStore();
+    });
+
+    function applyMode(mode){
+      document.body.classList.remove('safe-mode','rural-mode');
+      if(mode === 'safe'){ document.body.classList.add('safe-mode'); }
+      if(mode === 'rural'){ document.body.classList.add('rural-mode'); }
+      // small audible/tactile feedback if available
+      try{ if(navigator.vibrate) navigator.vibrate(20); }catch(e){}
+    }
+
+    // hide nucleus toggle
+    toggleHideNucleus.addEventListener('change', (e) => {
+      store.hideNucleus = e.target.checked;
+      applyHideNucleus(store.hideNucleus);
+      saveStore();
+    });
+
+    function applyHideNucleus(hide){
+      const cont = document.getElementById('nucleus-container');
+      if(hide){
+        cont.style.display = 'none';
+        restoreNucleusVisual.querySelector('button').style.display = 'inline-block';
+        restoreNucleusVisual.querySelector('button').style.opacity = '1';
+        restoreNucleusVisual.querySelector('button').onclick = restoreNucleus;
+      } else {
+        cont.style.display = '';
+        restoreNucleusVisual.querySelector('button').style.display = 'none';
+      }
+    }
+
+    function restoreNucleus(){
+      store.hideNucleus = false;
+      toggleHideNucleus.checked = false;
+      applyHideNucleus(false);
+      saveStore();
+    }
+
+    // RESTORE DEFAULTS
+    document.getElementById('btn-restore-defaults').addEventListener('click', ()=>{
+      store.features = {oracle:true,vault:true,ascii:false};
+      store.mode = 'normal';
+      store.hideNucleus = false;
+      store.stories = [];
+      store.minimized = false;
+      saveStore();
+      init();
+      nucleusPanel.classList.remove('active');
+    });
+
+    // STORIES: add / render / carousel
+    btnAddStory.addEventListener('click', addStory);
+    storyInput.addEventListener('keypress', (e)=>{ if(e.key==='Enter'){ addStory(); e.preventDefault(); } });
+
+    function addStory(){
+      const txt = storyInput.value.trim();
+      if(!txt) return;
+      store.stories.unshift({id: Date.now(), text: txt, t: new Date().toLocaleString()});
+      storyInput.value = '';
+      saveStore();
+      renderStories();
+    }
+
+    let storyIndex = 0;
+    function renderStories(){
+      const list = store.stories;
+      storiesWindow.innerHTML = '';
+      if(!list.length){
+        storiesWindow.innerHTML = '<div style="padding:6px;color:rgba(255,255,255,0.6)">Sem stories — adicione algo curto.</div>';
+        return;
+      }
+      // ensure index bounds
+      if(storyIndex >= list.length) storyIndex = list.length - 1;
+      if(storyIndex < 0) storyIndex = 0;
+      // create slide
+      const s = list[storyIndex];
+      const slide = document.createElement('div');
+      slide.className = 'story-slide';
+      slide.innerHTML = `<div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--viv-tiffany),var(--viv-rose));display:flex;align-items:center;justify-content:center;font-weight:700">${(store.user||'K').charAt(0).toUpperCase()}</div>
+                         <div style="display:flex;flex-direction:column">
+                           <div class="story-text">${escapeHtml(s.text)}</div>
+                           <div class="story-meta">${s.t}</div>
+                         </div>
+                         <div style="margin-left:auto;display:flex;gap:6px">
+                           <button class="small-btn" onclick="pinStory(${s.id})">Pin</button>
+                           <button class="small-btn" onclick="removeStory(${s.id})">Remover</button>
+                         </div>`;
+      storiesWindow.appendChild(slide);
+    }
+
+    storyPrev.addEventListener('click', ()=>{
+      storyIndex = Math.max(0, storyIndex - 1);
+      renderStories();
+    });
+    storyNext.addEventListener('click', ()=>{
+      storyIndex = Math.min(Math.max(0, store.stories.length - 1), storyIndex + 1);
+      renderStories();
+    });
+
+    function pinStory(id){
+      const idx = store.stories.findIndex(s => s.id === id);
+      if(idx === -1) return;
+      const [it] = store.stories.splice(idx,1);
+      store.stories.unshift(it);
+      storyIndex = 0;
+      saveStore();
+      renderStories();
+    }
+    function removeStory(id){
+      store.stories = store.stories.filter(s => s.id !== id);
+      if(storyIndex >= store.stories.length) storyIndex = Math.max(0, store.stories.length - 1);
+      saveStore();
+      renderStories();
+    }
+
+    // NAV BUTTONS wired to features + views
+    btnNavOracle.addEventListener('click', (e)=>{
+      if(!store.features.oracle) return;
+      toggleView('oracle');
+    });
+    btnNavVault.addEventListener('click', (e)=>{
+      if(!store.features.vault) return;
+      toggleView('vault');
+    });
+    btnQuickOracle.addEventListener('click', ()=>{ if(store.features.oracle) toggleView('oracle'); });
+    btnQuickVault.addEventListener('click', ()=>{ if(store.features.vault) toggleView('vault'); });
+
+    function toggleView(name){
+      if(name === 'oracle'){
+        viewOracle.classList.toggle('hidden');
+        viewVault.classList.add('hidden');
+        nucleusPanel.classList.remove('active');
+      }
+      if(name === 'vault'){
+        viewVault.classList.toggle('hidden');
+        viewOracle.classList.add('hidden');
+        nucleusPanel.classList.remove('active');
+      }
+    }
+
+    // VAULT basic save/list (client side)
+    btnSaveVault.addEventListener('click', ()=>{
+      const content = vaultArea.value.trim();
+      if(!content) return alert('Escreva algo antes de salvar.');
+      const doc = { id: Date.now(), title: 'DOC_' + Date.now().toString().slice(-4), content, date: new Date().toLocaleString() };
+      store.vault.unshift(doc);
+      saveStore();
+      vaultArea.value = '';
+      renderVaultList();
+      alert('Salvo no Vault.');
+    });
+
+    function renderVaultList(){
+      if(!store.vault.length){ vaultList.innerHTML = '<div class="text-sm text-gray-400">Vault vazio</div>'; return; }
+      vaultList.innerHTML = store.vault.map(d => {
+        return `<div class="p-2 rounded bg-black/20 mb-2">
+                  <div class="flex justify-between items-center">
+                    <div>
+                      <div class="font-code text-sm font-bold">${escapeHtml(d.title)}</div>
+                      <div class="text-[11px] text-gray-400">${escapeHtml(d.date)}</div>
+                    </div>
+                    <div style="display:flex;gap:6px">
+                      <button class="small-btn" onclick='runVault(${d.id})'>EXEC</button>
+                      <button class="small-btn" onclick='deleteVault(${d.id})'>DEL</button>
+                    </div>
+                  </div>
+                </div>`;
+      }).join('');
+    }
+
+    window.runVault = function(id){
+      const doc = store.vault.find(d => d.id === id);
+      if(!doc) return;
+      const w = window.open(); w.document.write(doc.content); w.document.close();
+    }
+    window.deleteVault = function(id){
+      if(!confirm('Deletar arquivo?')) return;
+      store.vault = store.vault.filter(d => d.id !== id);
+      saveStore();
+      renderVaultList();
+    }
+
+    // Escape helper to avoid raw HTML injection when showing text
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"]/g, function(m){ return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' })[m]; });
+    }
+
+    // small utility: restore defaults button visible if nucleus hidden
+    function toggleRestoreButton(){
+      const btn = document.getElementById('btn-restore-nucleus');
+      if(store.hideNucleus) { btn.style.display = 'inline-block'; } else { btn.style.display = 'none'; }
+    }
+
+    // BOOT
+    init();
+    applyMode(store.mode);
+    toggleRestoreButton();
+
+    // ensure clicking outside panel closes it
+    document.addEventListener('click', (e)=>{
+      if(!nucleusPanel.contains(e.target) && !document.getElementById('nucleus-container').contains(e.target)){
+        nucleusPanel.classList.remove('active');
+      }
+    });
+
+    // keyboard shortcut: N toggles nucleus (unless hidden)
+    document.addEventListener('keydown', (e)=>{
+      if(e.key.toLowerCase() === 'n' && !store.hideNucleus){
+        nucleusPanel.classList.toggle('active');
+      }
+    });
+
+    // expose some quick functions for debugging from console
+    window._vivivi = { store, saveStore, renderStories, renderVaultList };
+
+  </script>
+</body>
+</html>

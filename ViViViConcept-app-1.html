@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViViVi - Códex Arquétipos & Aromas</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        vivivi: {
+                            dark: '#0f0c29',
+                            mid: '#302b63',
+                            light: '#24243e',
+                            gold: '#ffd700',
+                            accent: '#ff00cc'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* CSS Pro Extras */
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+
+        .glass-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border-left: 4px solid #ffd700;
+            transition: all 0.3s ease;
+        }
+
+        .option-btn:active {
+            transform: scale(0.98);
+            background: rgba(255, 215, 0, 0.2);
+        }
+
+        /* Accordion Transitions */
+        details > summary {
+            list-style: none;
+            cursor: pointer;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        details[open] summary ~ * {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .rotate-icon { transition: transform 0.3s; }
+        details[open] .rotate-icon { transform: rotate(180deg); }
+
+        /* Loader Animation */
+        .loader-ring {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+        }
+        .loader-ring:after {
+            content: " ";
+            display: block;
+            width: 64px;
+            height: 64px;
+            margin: 8px;
+            border-radius: 50%;
+            border: 6px solid #ffd700;
+            border-color: #ffd700 transparent #ffd700 transparent;
+            animation: ring 1.2s linear infinite;
+        }
+        @keyframes ring {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="antialiased flex flex-col items-center justify-center p-4">
+
+    <main id="app" class="w-full max-w-md mx-auto relative min-h-[90vh] flex flex-col">
+        
+        <header class="text-center mb-6 py-4">
+            <h1 class="font-serif text-2xl text-vivivi-gold tracking-widest">ViViVi</h1>
+            <p class="text-xs text-gray-400 uppercase tracking-widest">System Códex 12</p>
+        </header>
+
+        <section id="view-landing" class="flex-1 flex flex-col justify-center items-center text-center animate-fade-in">
+            <div class="mb-8 relative">
+                <div class="absolute inset-0 bg-vivivi-accent opacity-20 blur-3xl rounded-full"></div>
+                <img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" alt="Mystic Icon" class="w-32 h-32 relative z-10 invert drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]">
+            </div>
+
+            <h2 class="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-vivivi-gold to-white">
+                Descubra Seu Arquétipo
+            </h2>
+            <p class="text-gray-300 mb-8 px-4 leading-relaxed">
+                Ative a rede infodose interdimensional e sintonize com sua frequência. Descubra qual aroma ViViVi potencializa sua essência.
+            </p>
+
+            <div class="text-xs text-vivivi-gold mb-8 opacity-70 font-mono border border-vivivi-gold/30 p-2 rounded">
+                [PAI: CÓDEX] ⬇ [FILHO: ATIVAR] ⬇ [ESPÍRITO: SINTONIZAR]
+            </div>
+
+            <button onclick="app.startQuiz()" class="w-full bg-gradient-to-r from-vivivi-mid to-vivivi-dark border border-vivivi-gold text-vivivi-gold font-bold py-4 px-8 rounded-full shadow-[0_0_20px_rgba(255,215,0,0.3)] active:scale-95 transition-all uppercase tracking-wider">
+                Iniciar Jornada
+            </button>
+        </section>
+
+        <section id="view-quiz" class="hidden flex-1 flex flex-col w-full">
+            <div class="w-full bg-gray-800 rounded-full h-2 mb-6">
+                <div id="progress-bar" class="bg-gradient-to-r from-vivivi-accent to-vivivi-gold h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+
+            <div class="glass-panel p-6 flex-1 flex flex-col relative overflow-hidden">
+                <span class="text-vivivi-gold text-xs font-bold mb-2 uppercase tracking-widest">PERGUNTA <span id="q-current">1</span>/<span id="q-total">6</span></span>
+                <h3 id="question-text" class="text-xl font-medium mb-8 leading-relaxed h-20 flex items-center">
+                    Carregando pergunta...
+                </h3>
+
+                <div id="options-container" class="space-y-3 flex-1 overflow-y-auto pb-4">
+                    </div>
+            </div>
+        </section>
+
+        <section id="view-loading" class="hidden flex-1 flex flex-col justify-center items-center text-center">
+            <div class="loader-ring mb-4"></div>
+            <p class="text-vivivi-gold animate-pulse text-sm tracking-widest uppercase">Processando Algoritmo Códex...</p>
+            <p class="text-xs text-gray-500 mt-2">Sintonizando frequência de Deus (X)</p>
+        </section>
+
+        <section id="view-result" class="hidden flex-1 w-full animate-slide-up pb-10">
+            
+            <div class="text-center mb-6">
+                <p class="text-sm text-gray-400 uppercase">Sua essência primordial é:</p>
+                <h2 id="result-archetype" class="text-4xl font-serif text-vivivi-gold drop-shadow-lg my-2">O Herói</h2>
+                <div class="inline-block px-3 py-1 border border-vivivi-accent rounded-full text-xs text-vivivi-accent uppercase tracking-wide bg-vivivi-accent/10">
+                    ViViVi Aroma: <span id="result-aroma-name" class="font-bold text-white">Do Triunfo</span>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                
+                <details class="glass-panel group" open>
+                    <summary class="flex justify-between items-center p-4 cursor-pointer select-none">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-fingerprint text-vivivi-gold"></i>
+                            <span class="font-bold">Perfil do Arquétipo</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-gray-400 rotate-icon"></i>
+                    </summary>
+                    <div class="p-4 pt-0 text-sm text-gray-300 space-y-3 border-t border-gray-700/50 mt-2">
+                        <div id="archetype-details"></div> </div>
+                </details>
+
+                <details class="glass-panel group">
+                    <summary class="flex justify-between items-center p-4 cursor-pointer select-none">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-flask text-vivivi-accent"></i>
+                            <span class="font-bold">Sua Fórmula ViViVi</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-gray-400 rotate-icon"></i>
+                    </summary>
+                    <div class="p-4 pt-0 border-t border-gray-700/50 mt-2">
+                        <div class="mb-3">
+                            <h4 class="text-vivivi-gold text-xs uppercase font-bold mb-1">Essências Necessárias</h4>
+                            <p id="aroma-ingredients" class="text-sm italic text-white"></p>
+                        </div>
+                        <div class="mb-3">
+                            <h4 class="text-vivivi-gold text-xs uppercase font-bold mb-1">Ambientes Sugeridos</h4>
+                            <p id="aroma-environments" class="text-sm text-gray-300"></p>
+                        </div>
+                        <div>
+                            <h4 class="text-vivivi-gold text-xs uppercase font-bold mb-1">Efeitos na Mente (Dopamina Sexy)</h4>
+                            <p id="aroma-effects" class="text-sm text-gray-300"></p>
+                        </div>
+                    </div>
+                </details>
+
+                 <details class="glass-panel group">
+                    <summary class="flex justify-between items-center p-4 cursor-pointer select-none">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-bolt text-yellow-400"></i>
+                            <span class="font-bold">Potencialização</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-gray-400 rotate-icon"></i>
+                    </summary>
+                    <div class="p-4 pt-0 border-t border-gray-700/50 mt-2">
+                         <p id="aroma-potential" class="text-sm text-gray-300 leading-relaxed"></p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="mt-8 flex gap-3 justify-center">
+                <button onclick="app.shareResult()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-xl font-bold transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-share-nodes"></i> Compartilhar
+                </button>
+                <button onclick="location.reload()" class="flex-1 bg-vivivi-gold hover:bg-yellow-500 text-black py-3 rounded-xl font-bold transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> Reiniciar
+                </button>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+        // --- DATA LAYER (Super Tabela & Aromas) ---
+        const DB = {
+            archetypes: {
+                innocent: {
+                    name: "Inocente",
+                    aromaId: "paz",
+                    traits: {
+                        carreira: "Simplicidade no trabalho.",
+                        relacionamentos: "Confiança e pureza.",
+                        criatividade: "Expressão leve e espontânea.",
+                        prosperidade: "Gratidão como medida de prosperidade."
+                    }
+                },
+                explorer: {
+                    name: "Explorador",
+                    aromaId: "novos_caminhos",
+                    traits: {
+                        carreira: "Inovação e desafios.",
+                        relacionamentos: "Autenticidade e liberdade.",
+                        criatividade: "Movida por experiências novas.",
+                        prosperidade: "Criação de novas oportunidades."
+                    }
+                },
+                sage: {
+                    name: "Sábio",
+                    aromaId: "mente",
+                    traits: {
+                        carreira: "Busca por conhecimento profundo.",
+                        relacionamentos: "Compreensão e profundidade.",
+                        criatividade: "Soluções com análise profunda.",
+                        prosperidade: "Decisões financeiras sábias."
+                    }
+                },
+                hero: {
+                    name: "Herói",
+                    aromaId: "triunfo",
+                    traits: {
+                        carreira: "Busca de resultados e conquistas.",
+                        relacionamentos: "Proteção e superação.",
+                        criatividade: "Foco em superar obstáculos.",
+                        prosperidade: "Superação de desafios financeiros."
+                    }
+                },
+                caregiver: {
+                    name: "Cuidador",
+                    aromaId: "lar",
+                    traits: {
+                        carreira: "Apoiar o bem-estar coletivo.",
+                        relacionamentos: "Amor e dedicação.",
+                        criatividade: "Soluções que promovem bem-estar.",
+                        prosperidade: "Generosidade como medida de sucesso."
+                    }
+                },
+                rebel: {
+                    name: "Rebelde",
+                    aromaId: "revolucao",
+                    traits: {
+                        carreira: "Inovação e quebra de regras.",
+                        relacionamentos: "Autenticidade e independência.",
+                        criatividade: "Inovação radical.",
+                        prosperidade: "Desafia normas de sucesso."
+                    }
+                },
+                lover: {
+                    name: "Amante",
+                    aromaId: "desejo",
+                    traits: {
+                        carreira: "Conexões emocionais profundas.",
+                        relacionamentos: "Romantismo e acolhimento.",
+                        criatividade: "Inspirada por emoções profundas.",
+                        prosperidade: "Medida pelo amor e felicidade."
+                    }
+                },
+                creator: {
+                    name: "Criador",
+                    aromaId: "criacao",
+                    traits: {
+                        carreira: "Inovação e criação.",
+                        relacionamentos: "Criação conjunta.",
+                        criatividade: "Inovação constante e dinâmica.",
+                        prosperidade: "Medida pelo que cria."
+                    }
+                },
+                jester: {
+                    name: "Bobo da Corte",
+                    aromaId: "alegria",
+                    traits: {
+                        carreira: "Alegria e descontração.",
+                        relacionamentos: "Promove diversão e leveza.",
+                        criatividade: "Espontaneidade e leveza.",
+                        prosperidade: "Medida pelo nível de alegria."
+                    }
+                },
+                magician: {
+                    name: "Mago",
+                    aromaId: "prosperidade",
+                    traits: {
+                        carreira: "Transformação e visão.",
+                        relacionamentos: "Conexões espirituais profundas.",
+                        criatividade: "Inspirada por intuição.",
+                        prosperidade: "Habilidade de transformar."
+                    }
+                },
+                ruler: {
+                    name: "Governante",
+                    aromaId: "poder",
+                    traits: {
+                        carreira: "Controle e liderança eficaz.",
+                        relacionamentos: "Respeito e autoridade.",
+                        criatividade: "Estruturada e voltada ao controle.",
+                        prosperidade: "Medida pelo poder e autoridade."
+                    }
+                },
+                orphan: {
+                    name: "Órfão",
+                    aromaId: "raizes",
+                    traits: {
+                        carreira: "Segurança e estabilidade.",
+                        relacionamentos: "Confiança e proteção.",
+                        criatividade: "Focada em segurança.",
+                        prosperidade: "Segurança e estabilidade."
+                    }
+                }
+            },
+            aromas: {
+                paz: { name: "Aroma da Paz", ingredients: "Lavanda, camomila e capim-limão", environments: "Quartos, salas de meditação.", effects: "Reduz o estresse, promove empatia.", potential: "Promove harmonia emocional, reconciliação e paz interior." },
+                novos_caminhos: { name: "Aroma dos Novos Caminhos", ingredients: "Cedro, eucalipto e pimenta rosa", environments: "Escritórios, halls de entrada.", effects: "Amplia o senso de liberdade, atrai oportunidades.", potential: "Desperta a coragem para explorar novos horizontes." },
+                mente: { name: "Aroma da Mente", ingredients: "Sândalo, alecrim e incenso", environments: "Salas de estudos, bibliotecas.", effects: "Melhora o foco, estimula insights.", potential: "Fortalece a clareza mental e a intuição." },
+                triunfo: { name: "Aroma do Triunfo", ingredients: "Limão siciliano, gengibre e alecrim", environments: "Home offices, academias.", effects: "Eleva a autoconfiança, energia física.", potential: "Estimula a coragem e a determinação." },
+                criacao: { name: "Aroma da Criação", ingredients: "Laranja doce, ylang-ylang e gerânio", environments: "Ateliês, quartos infantis.", effects: "Amplifica a expressão artística.", potential: "Estimula a criatividade e novas ideias." },
+                poder: { name: "Aroma do Poder", ingredients: "Vetiver, jasmim e cedro", environments: "Salas de jantar, escritórios corporativos.", effects: "Inspira confiança, promove organização.", potential: "Projeta liderança, autoridade e equilíbrio." },
+                lar: { name: "Aroma do Lar que Acolhe", ingredients: "Baunilha, rosa e camomila", environments: "Cozinhas, salas de convivência.", effects: "Estimula o cuidado, fortalece relações.", potential: "Cria um ambiente acolhedor e seguro." },
+                prosperidade: { name: "Aroma da Prosperidade", ingredients: "Canela, patchouli e laranja amarga", environments: "Cantos de prosperidade.", effects: "Amplifica a autoconfiança, atrai abundância.", potential: "Atrai prosperidade e transforma energias." },
+                revolucao: { name: "Aroma da Revolução", ingredients: "Pimenta preta, cravo e cardamomo", environments: "Varandas, áreas de lazer.", effects: "Renova energias, promove autenticidade.", potential: "Estimula a quebra de padrões e ousadia." },
+                desejo: { name: "Aroma do Desejo", ingredients: "Jasmim, rosa damascena e âmbar", environments: "Quartos, espaços românticos.", effects: "Intensifica relacionamentos íntimos.", potential: "Amplifica a sensualidade e magnetismo." },
+                alegria: { name: "Aroma da Alegria", ingredients: "Tangerina, hortelã e melissa", environments: "Salas de jogos, áreas de lazer.", effects: "Promove risadas e une as pessoas.", potential: "Traz leveza, bom humor e empatia." },
+                raizes: { name: "Aroma das Raízes", ingredients: "Lavanda, manjericão e cipreste", environments: "Salas de estar, cozinhas.", effects: "Estimula confiança e laços.", potential: "Reforça a base emocional e pertencimento." }
+            }
+        };
+
+        const QUESTIONS = [
+            {
+                text: "O que você mais busca sentir no seu dia a dia?",
+                options: [
+                    { label: "Paz, segurança e harmonia", types: ['innocent', 'orphan', 'caregiver'] },
+                    { label: "Poder, conquista e sucesso", types: ['ruler', 'hero', 'magician'] },
+                    { label: "Liberdade, diversão e novidade", types: ['explorer', 'jester', 'rebel'] },
+                    { label: "Conexão, criação e sabedoria", types: ['lover', 'creator', 'sage'] }
+                ]
+            },
+            {
+                text: "Diante de um grande desafio, qual sua reação imediata?",
+                options: [
+                    { label: "Enfrento de cabeça erguida para vencer", types: ['hero', 'ruler'] },
+                    { label: "Busco uma solução criativa ou inovadora", types: ['creator', 'magician'] },
+                    { label: "Analiso os fatos ou busco outro caminho", types: ['sage', 'explorer'] },
+                    { label: "Busco apoio ou tento ajudar os envolvidos", types: ['orphan', 'caregiver'] }
+                ]
+            },
+            {
+                text: "Qual destas palavras melhor define seu 'super poder'?",
+                options: [
+                    { label: "Paixão / Intensidade", types: ['lover', 'rebel'] },
+                    { label: "Ordem / Estrutura", types: ['ruler', 'innocent'] },
+                    { label: "Alegria / Espontaneidade", types: ['jester', 'explorer'] },
+                    { label: "Visão / Transformação", types: ['magician', 'sage'] }
+                ]
+            },
+            {
+                text: "Qual é o seu maior medo?",
+                options: [
+                    { label: "Ser fraco ou não ter poder", types: ['hero', 'ruler'] },
+                    { label: "Ficar preso ou entediado", types: ['explorer', 'jester'] },
+                    { label: "Ser enganado ou ignorante", types: ['sage', 'innocent'] },
+                    { label: "Ficar sozinho ou não ser amado", types: ['lover', 'orphan', 'caregiver'] }
+                ]
+            },
+            {
+                text: "Como você define prosperidade?",
+                options: [
+                    { label: "Ter liberdade para ir onde quiser", types: ['explorer', 'rebel'] },
+                    { label: "Ter estabilidade e proteger os meus", types: ['orphan', 'caregiver', 'ruler'] },
+                    { label: "Realizar meus sonhos e criar coisas", types: ['creator', 'magician', 'hero'] },
+                    { label: "Viver momentos felizes e autênticos", types: ['jester', 'innocent', 'lover'] }
+                ]
+            },
+            {
+                text: "Escolha um elemento para sintonizar:",
+                options: [
+                    { label: "Fogo (Ação e Transformação)", types: ['hero', 'magician', 'rebel'] },
+                    { label: "Terra (Estabilidade e Criação)", types: ['caregiver', 'creator', 'orphan'] },
+                    { label: "Ar (Ideias e Liberdade)", types: ['sage', 'explorer', 'jester'] },
+                    { label: "Água (Emoção e Conexão)", types: ['lover', 'innocent', 'ruler'] }
+                ]
+            }
+        ];
+
+        // --- APP ENGINE ---
+        const app = {
+            state: {
+                currentQ: 0,
+                scores: {}
+            },
+
+            init: function() {
+                // Initialize scores
+                Object.keys(DB.archetypes).forEach(key => this.state.scores[key] = 0);
+            },
+
+            startQuiz: function() {
+                this.init();
+                document.getElementById('view-landing').classList.add('hidden');
+                document.getElementById('view-quiz').classList.remove('hidden');
+                this.renderQuestion();
+            },
+
+            renderQuestion: function() {
+                const q = QUESTIONS[this.state.currentQ];
+                
+                // Update UI text
+                document.getElementById('q-current').innerText = this.state.currentQ + 1;
+                document.getElementById('q-total').innerText = QUESTIONS.length;
+                document.getElementById('question-text').innerText = q.text;
+                
+                // Update Progress
+                const progress = ((this.state.currentQ) / QUESTIONS.length) * 100;
+                document.getElementById('progress-bar').style.width = `${progress}%`;
+
+                // Render Options
+                const container = document.getElementById('options-container');
+                container.innerHTML = '';
+                
+                q.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = "option-btn w-full text-left p-4 glass-card text-sm font-medium hover:bg-white/10 mb-2 transition-all";
+                    btn.innerText = opt.label;
+                    btn.onclick = () => this.handleAnswer(opt.types);
+                    container.appendChild(btn);
+                });
+            },
+
+            handleAnswer: function(types) {
+                // Add points
+                types.forEach(type => {
+                    if (this.state.scores[type] !== undefined) {
+                        this.state.scores[type]++;
+                    }
+                });
+
+                this.state.currentQ++;
+
+                if (this.state.currentQ < QUESTIONS.length) {
+                    // Next Question with slight delay for visual feedback
+                    setTimeout(() => this.renderQuestion(), 200);
+                } else {
+                    this.finishQuiz();
+                }
+            },
+
+            finishQuiz: function() {
+                document.getElementById('view-quiz').classList.add('hidden');
+                document.getElementById('view-loading').classList.remove('hidden');
+
+                // Determine Winner
+                let winner = Object.keys(this.state.scores).reduce((a, b) => this.state.scores[a] > this.state.scores[b] ? a : b);
+                
+                // Fallback / tie-breaker logic could go here, simplicity for now
+                
+                // Simulate Processing Time (Infodose activation)
+                setTimeout(() => {
+                    this.renderResult(winner);
+                }, 2000);
+            },
+
+            renderResult: function(archetypeKey) {
+                const arch = DB.archetypes[archetypeKey];
+                const aroma = DB.aromas[arch.aromaId];
+
+                // Hydrate DOM
+                document.getElementById('result-archetype').innerText = `O ${arch.name}`;
+                document.getElementById('result-aroma-name').innerText = aroma.name.replace('ViViVi ', '').replace('Aroma ', '');
+                
+                // 1. Archetype Details
+                const traitsHtml = `
+                    <p><strong class="text-vivivi-gold">Carreira:</strong> ${arch.traits.carreira}</p>
+                    <p><strong class="text-vivivi-gold">Relacionamentos:</strong> ${arch.traits.relacionamentos}</p>
+                    <p><strong class="text-vivivi-gold">Criatividade:</strong> ${arch.traits.criatividade}</p>
+                    <p><strong class="text-vivivi-gold">Prosperidade:</strong> ${arch.traits.prosperidade}</p>
+                `;
+                document.getElementById('archetype-details').innerHTML = traitsHtml;
+
+                // 2. Aroma Details
+                document.getElementById('aroma-ingredients').innerText = aroma.ingredients;
+                document.getElementById('aroma-environments').innerText = aroma.environments;
+                document.getElementById('aroma-effects').innerText = aroma.effects;
+                document.getElementById('aroma-potential').innerText = aroma.potential;
+
+                // Switch Views
+                document.getElementById('view-loading').classList.add('hidden');
+                document.getElementById('view-result').classList.remove('hidden');
+            },
+
+            shareResult: async function() {
+                const archetype = document.getElementById('result-archetype').innerText;
+                const aroma = document.getElementById('result-aroma-name').innerText;
+                const text = `Descobri que meu arquétipo é ${archetype} e meu aroma ViViVi é o ${aroma}! Descubra o seu também.`;
+
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: 'Meu Arquétipo ViViVi',
+                            text: text,
+                            url: window.location.href
+                        });
+                    } catch (err) {
+                        console.log('Compartilhamento cancelado');
+                    }
+                } else {
+                    alert('Copie e compartilhe: ' + text);
+                }
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ViViVi · Infodose — Quiz & Ativações Haski</title>
+
+  <!-- Tailwind CDN (rapid prototyping) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonts & icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    /* Tailwind runtime config: Palette Rose / Yellow / Tiffany (usable via utility classes) */
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            vivivi: {
+              rose: '#ff6b9a',
+              yellow: '#ffd700',
+              tiffany: '#00c4b4',
+              dark: '#0b0c10',
+              mid: '#1a1233'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root{
+      --bg-0: #07060a;
+      --glass: rgba(255,255,255,0.04);
+      --muted: #9aa0a6;
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      background: radial-gradient(circle at 10% 10%, rgba(0,196,180,0.06), transparent 18%), linear-gradient(180deg,#07060a 0%, #0f0c18 60%);
+      color: #eef6fb;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      -webkit-touch-callout:none;
+    }
+
+    /* Card/glass */
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.18));
+      border:1px solid rgba(255,255,255,0.04);
+      border-radius:14px;
+      padding:14px;
+      backdrop-filter: blur(6px);
+    }
+
+    /* Buttons */
+    .cta {
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding:12px 14px; border-radius:12px; font-weight:700; cursor:pointer; border:none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.55);
+    }
+
+    .btn-chat { background: linear-gradient(90deg,#00c4b4,#ff6b9a); color:#021; }
+    .btn-wpp  { background: linear-gradient(90deg,#25D366,#1DA851); color:white; }
+    .btn-videos{ background: linear-gradient(90deg,#ff6b9a,#ffd700); color:#042; }
+    .btn-sched{ background: linear-gradient(90deg,#00c4b4,#ffd700); color:#042; }
+
+    .small-muted{ color:var(--muted); font-size:0.86rem; }
+    .chip{ padding:6px 10px; border-radius:999px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); font-weight:600; font-size:0.82rem }
+
+    /* modal */
+    .modal-backdrop { position:fixed; inset:0; background:rgba(2,6,23,0.6); display:flex; align-items:center; justify-content:center; z-index:60; }
+    .modal { width:calc(100% - 40px); max-width:720px; border-radius:12px; padding:18px; background:linear-gradient(180deg,#08131a, #07121a); border:1px solid rgba(255,255,255,0.06) }
+
+    /* responsive adjustments */
+    @media (max-width:420px){
+      .card{ padding:12px }
+      .cta{ padding:12px }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="max-w-3xl mx-auto p-4">
+    <header class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#ff6b9a,#00c4b4);box-shadow:0 8px 30px rgba(0,0,0,0.5)">
+          <span style="font-weight:800;color:#021">V</span>
+        </div>
+        <div>
+          <div style="font-weight:700">ViViVi · Infodose</div>
+          <div class="small-muted">Quiz · Aromas · Ativações Haski</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="chip">Rose • Yellow • Tiffany</span>
+      </div>
+    </header>
+
+    <!-- QUIZ / RESULT FLOW (simplified) -->
+    <section id="quiz" class="card mb-4">
+      <div id="quiz-view">
+        <div class="mb-3 small-muted">Pergunta <span id="qIndex">1</span>/<span id="qTotal">6</span></div>
+        <h2 id="qText" class="font-semibold text-xl mb-3">Carregando...</h2>
+
+        <div id="options" class="space-y-3 mb-4"></div>
+
+        <div class="flex items-center justify-between">
+          <button id="btnPrev" class="cta" style="background:transparent;border:1px solid rgba(255,255,255,0.04);color:inherit;padding:8px 12px;border-radius:10px">Voltar</button>
+          <div class="small-muted" id="progressLabel">0%</div>
+        </div>
+      </div>
+
+      <div id="result-view" class="hidden">
+        <div class="text-center mb-4">
+          <div class="small-muted">Sua essência primordial</div>
+          <h2 id="resultTitle" class="text-3xl font-extrabold mt-1">—</h2>
+          <div class="mt-2 small-muted">ViViVi Aroma: <span id="resultAroma" class="font-semibold">—</span></div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 mb-4">
+          <div class="card">
+            <div class="small-muted">Essências</div>
+            <div id="resIngredients" class="font-medium mt-1">—</div>
+            <div class="small-muted mt-2">Ambientes: <span id="resEnvs">—</span></div>
+          </div>
+
+          <div class="card">
+            <div class="small-muted">Efeitos</div>
+            <div id="resEffects" class="mt-1 small-muted">—</div>
+          </div>
+        </div>
+
+        <!-- CTA block: ChatGPT Haski / WhatsApp Haski / Videos / Agendamento -->
+        <div class="card">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <div class="small-muted">Ativações & Serviços</div>
+              <div class="text-sm small-muted mt-1">Escolha como ativar o Haski e personalizar seu espaço ViViVi.</div>
+            </div>
+            <div class="small-muted">Ações rápidas</div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <button id="ctaChatGPT" class="cta btn-chat" aria-label="Ativar Haski no ChatGPT">
+              <i class="fa-solid fa-robot"></i> ChatGPT (Haski)
+            </button>
+
+            <button id="ctaWhats" class="cta btn-wpp" aria-label="Ativar Haski no WhatsApp">
+              <i class="fa-brands fa-whatsapp"></i> WhatsApp (Haski)
+            </button>
+
+            <button id="ctaVideos" class="cta btn-videos" aria-label="Ver vídeos da dose">
+              <i class="fa-solid fa-play"></i> Vídeos da Dose
+            </button>
+
+            <button id="ctaSched" class="cta btn-sched" aria-label="Agendar personalização">
+              <i class="fa-solid fa-calendar-plus"></i> Agendar Personalização
+            </button>
+          </div>
+
+          <div class="mt-3 small-muted">Dica: abra o ChatGPT no celular, cole o prompt Haski e peça para o assistente "ativar Haski" — o modal abaixo contém o prompt pronto.</div>
+        </div>
+
+        <div class="mt-4 flex gap-3">
+          <button id="btnShare" class="cta" style="background:#111827;color:#fff;flex:1"><i class="fa-solid fa-share-nodes"></i> Compartilhar</button>
+          <button id="btnRestart" class="cta" style="background:linear-gradient(90deg,#ff6b9a,#ffd700);color:#042;flex:1"><i class="fa-solid fa-rotate-right"></i> Refazer</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="text-center small-muted">Made with ♥ by Kodux Style — ViViVi Infodose</footer>
+  </main>
+
+  <!-- HASKI PROMPT MODAL -->
+  <div id="haskiModal" class="hidden">
+    <div class="modal-backdrop">
+      <div class="modal">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div style="font-weight:800">Prompt Haski — Ativação</div>
+            <div class="small-muted" style="font-size:0.88rem">Copie e cole no ChatGPT ou use o botão "Copiar" abaixo.</div>
+          </div>
+          <button id="closeModal" class="chip">Fechar</button>
+        </div>
+
+        <pre id="haskiPrompt" class="mt-4 p-3" style="background:rgba(0,0,0,0.35);border-radius:8px;font-family:JetBrains Mono,monospace;white-space:pre-wrap;color:#e6f7f5">
+/* Prompt Haski (cole no ChatGPT) */
+Ativar modo Haski: atue como assistente "Haski" — respostas curtas, ritualísticas e com foco em limpeza energética e organização prática do espaço.
+1) Saudações concisas.
+2) Faça 3 perguntas rápidas para diagnosticar energia do ambiente.
+3) Sugira 3 ações práticas de limpeza/organização (rápidas), e 1 blend ViViVi sugerido.
+4) Termine com um ritual de encaixe (15s) e uma afirmação de ancoragem.
+Formato de resposta: 1) diagnóstico 2) ações 3) blend (ingredientes) 4) ritual 5) CTA para agendar personalização.
+        </pre>
+
+        <div class="mt-4 flex gap-3">
+          <button id="copyPrompt" class="cta" style="background:linear-gradient(90deg,#00c4b4,#ff6b9a);color:#021"><i class="fa-regular fa-copy"></i> Copiar Prompt</button>
+          <button id="openChatGPT" class="cta" style="background:#0b1220;color:#fff"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir ChatGPT</button>
+          <button id="insertPromptToChat" class="cta" style="background:#111827;color:#fff"><i class="fa-solid fa-paste"></i> (Opcional) Abrir instruções para colar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /***** CONFIG: coloque seus links / telefone aqui *****/
+    const LINKS = {
+      CHATGPT: 'https://chat.openai.com', // abre ChatGPT (usuário precisa colar o prompt)
+      WHATSAPP_PHONE: '',                  // ex: '5511999999999' (sem +). Se vazio, usamos wa.me com text.
+      WHATSAPP_TEXT: 'Olá! Quero ativar Haski e agendar personalização do meu espaço ViViVi. Por favor, me orientem.',
+      VIDEOS_URL: 'https://youtube.com/playlist?list=PLViViViDose', // troque pelo real
+      CALENDLY_URL: '' // ex: 'https://calendly.com/seu-usuario/personalizacao' -> se vazio, será mailto fallback
+    };
+    /*****************************************************/
+
+    // Basic quiz engine (compact) — uses QUESTIONS array from earlier style
+    const QUESTIONS = [
+      { q: "O que você mais busca sentir no seu dia a dia?", opts: [
+          { txt:"Paz, segurança e harmonia", types:['innocent','orphan','caregiver'] },
+          { txt:"Poder, conquista e sucesso", types:['ruler','hero','magician'] },
+          { txt:"Liberdade, novidade e diversão", types:['explorer','jester','rebel'] },
+          { txt:"Conexão, criação e sabedoria", types:['lover','creator','sage'] },
+        ]},
+      { q: "Diante de um desafio, sua reação?", opts: [
+          { txt:"Enfrento e resolvo", types:['hero','ruler'] },
+          { txt:"Crio uma solução nova", types:['creator','magician'] },
+          { txt:"Analiso com calma", types:['sage','explorer'] },
+          { txt:"Procuro apoio e cuido", types:['orphan','caregiver'] },
+        ]},
+      { q: "Seu superpoder é:", opts: [
+          { txt:"Paixão/Intensidade", types:['lover','rebel'] },
+          { txt:"Ordem/Estrutura", types:['ruler','innocent'] },
+          { txt:"Alegria/Espaço", types:['jester','explorer'] },
+          { txt:"Visão/Transformação", types:['magician','sage'] },
+        ]},
+      { q: "Maior medo:", opts: [
+          { txt:"Perder poder/força", types:['hero','ruler'] },
+          { txt:"Ficar preso/entediado", types:['explorer','jester'] },
+          { txt:"Ser enganado/ignorante", types:['sage','innocent'] },
+          { txt:"Ficar sozinho/sem amor", types:['lover','orphan','caregiver'] },
+        ]},
+      { q: "Prosperidade é:", opts: [
+          { txt:"Liberdade", types:['explorer','rebel'] },
+          { txt:"Estabilidade", types:['orphan','caregiver','ruler'] },
+          { txt:"Criar e realizar", types:['creator','magician','hero'] },
+          { txt:"Momentos felizes", types:['jester','innocent','lover'] },
+        ]},
+      { q: "Escolha um elemento:", opts: [
+          { txt:"Fogo (ação)", types:['hero','magician','rebel'] },
+          { txt:"Terra (criação)", types:['caregiver','creator','orphan'] },
+          { txt:"Ar (ideias)", types:['sage','explorer','jester'] },
+          { txt:"Água (emoção)", types:['lover','innocent','ruler'] },
+        ]}
+    ];
+
+    // aroma map minimal
+    const AROMAS = {
+      innocent: { name:"Aroma da Paz", ing:"Lavanda, camomila, capim-limão", env:"Quartos, meditação", eff:"Serenidade e empatia" },
+      hero: { name:"Aroma do Triunfo", ing:"Limão siciliano, gengibre, alecrim", env:"Home-office, academia", eff:"Coragem e foco" },
+      sage: { name:"Aroma da Mente", ing:"Sândalo, alecrim, incenso", env:"Estudos, biblioteca", eff:"Clareza mental" },
+      magician: { name:"Aroma da Prosperidade", ing:"Canela, patchouli, laranja amarga", env:"Cantos de prosperidade", eff:"Manifestação / energia" },
+      // fallback
+      default: { name:"ViViVi Blend", ing:"Lavanda, laranja, cedro", env:"Ambientes diversos", eff:"Equilíbrio" }
+    };
+
+    // state
+    const state = { idx:0, scores:{} };
+    const archeKeys = ['innocent','explorer','sage','hero','caregiver','rebel','lover','creator','jester','magician','ruler','orphan'];
+    archeKeys.forEach(k => state.scores[k]=0);
+
+    // UI refs
+    const qIndex = document.getElementById('qIndex');
+    const qTotal = document.getElementById('qTotal');
+    const qText = document.getElementById('qText');
+    const options = document.getElementById('options');
+    const progressLabel = document.getElementById('progressLabel');
+
+    const resultView = document.getElementById('result-view');
+    const quizView = document.getElementById('quiz-view');
+    const resTitle = document.getElementById('resultTitle');
+    const resAroma = document.getElementById('resultAroma');
+    const resIngredients = document.getElementById('resIngredients');
+    const resEnvs = document.getElementById('resEnvs');
+    const resEffects = document.getElementById('resEffects');
+
+    qTotal.textContent = QUESTIONS.length;
+
+    function renderQuestion(){
+      const q = QUESTIONS[state.idx];
+      qIndex.textContent = state.idx + 1;
+      qText.textContent = q.q;
+      options.innerHTML = '';
+      q.opts.forEach(o=>{
+        const btn = document.createElement('button');
+        btn.className = 'w-full text-left card hover:scale-[1.01] transition p-3';
+        btn.style.border = '1px solid rgba(255,255,255,0.03)';
+        btn.innerHTML = `<div style="font-weight:600">${o.txt}</div>`;
+        btn.onclick = ()=>{
+          o.types.forEach(t => { if(state.scores[t]===undefined) state.scores[t]=0; state.scores[t]++; });
+          // small feedback
+          btn.animate([{transform:'scale(1)'},{transform:'scale(.993)'}],{duration:160});
+          // next
+          state.idx++;
+          if(state.idx < QUESTIONS.length) renderQuestion();
+          else finishQuiz();
+          updateProgress();
+        };
+        options.appendChild(btn);
+      });
+      updateProgress();
+    }
+
+    function updateProgress(){
+      const pct = Math.round((state.idx / QUESTIONS.length) * 100);
+      progressLabel.textContent = pct + '%';
+    }
+
+    function finishQuiz(){
+      quizView.classList.add('hidden');
+      // choose winner
+      const winner = Object.keys(state.scores).reduce((a,b) => state.scores[a] > state.scores[b] ? a : b);
+      showResult(winner);
+    }
+
+    function showResult(key){
+      resultView.classList.remove('hidden');
+      const archName = (key && key !== '' ? (key[0].toUpperCase()+key.slice(1)) : 'Sintonizado');
+      resTitle.textContent = archName;
+      const aroma = AROMAS[key] || AROMAS.default;
+      resAroma.textContent = aroma.name;
+      resIngredients.textContent = aroma.ing;
+      resEnvs.textContent = aroma.env;
+      resEffects.textContent = aroma.eff;
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    // init
+    renderQuestion();
+
+    // CTA handlers
+    const ctaChat = document.getElementById('ctaChatGPT');
+    const ctaWhats = document.getElementById('ctaWhats');
+    const ctaVideos = document.getElementById('ctaVideos');
+    const ctaSched = document.getElementById('ctaSched');
+
+    const hasiModal = document.getElementById('haskiModal');
+    const closeModal = document.getElementById('closeModal');
+    const copyPromptBtn = document.getElementById('copyPrompt');
+    const openChatBtn = document.getElementById('openChatGPT');
+
+    ctaChat.addEventListener('click', ()=>{
+      // open modal with prompt; user can copy then open ChatGPT
+      hasiModal.classList.remove('hidden');
+    });
+
+    closeModal.addEventListener('click', ()=> hasiModal.classList.add('hidden'));
+
+    copyPromptBtn.addEventListener('click', ()=>{
+      const txt = document.getElementById('haskiPrompt').innerText;
+      navigator.clipboard.writeText(txt).then(()=> {
+        copyPromptBtn.textContent = "Copiado ✓";
+        setTimeout(()=> copyPromptBtn.textContent = "Copiar Prompt", 1600);
+      }).catch(()=> alert('Não foi possível copiar — selecione e copie manualmente.'));
+    });
+
+    openChatBtn.addEventListener('click', ()=>{
+      window.open(LINKS.CHATGPT, '_blank', 'noopener');
+    });
+
+    ctaWhats.addEventListener('click', ()=>{
+      const t = encodeURIComponent(LINKS.WHATSAPP_TEXT);
+      if (LINKS.WHATSAPP_PHONE && LINKS.WHATSAPP_PHONE.trim().length>3) {
+        window.open(`https://api.whatsapp.com/send?phone=${LINKS.WHATSAPP_PHONE}&text=${t}`, '_blank', 'noopener');
+      } else {
+        // open generic with text
+        window.open(`https://api.whatsapp.com/send?text=${t}`, '_blank', 'noopener');
+      }
+    });
+
+    ctaVideos.addEventListener('click', ()=> {
+      window.open(LINKS.VIDEOS_URL, '_blank', 'noopener');
+    });
+
+    ctaSched.addEventListener('click', ()=>{
+      if (LINKS.CALENDLY_URL && LINKS.CALENDLY_URL.length>5) {
+        window.open(LINKS.CALENDLY_URL, '_blank', 'noopener');
+      } else {
+        const subj = encodeURIComponent('Agendamento - Personalização ViViVi');
+        const body = encodeURIComponent('Olá — quero agendar personalização/limpeza do meu espaço ViViVi. Meus horários preferidos: ');
+        window.location.href = `mailto:contato@vivivi.example?subject=${subj}&body=${body}`;
+      }
+    });
+
+    // share / restart
+    document.getElementById('btnShare').addEventListener('click', async ()=>{
+      const title = document.getElementById('resultTitle').innerText;
+      const aroma = document.getElementById('resultAroma').innerText;
+      const text = `Meu arquétipo ViViVi: ${title} — Aroma: ${aroma}. Descubra o seu!`;
+      if (navigator.share) {
+        try { await navigator.share({title:'Meu Arquétipo ViViVi', text, url: window.location.href}); }
+        catch(e) { console.log('share canceled'); }
+      } else {
+        navigator.clipboard.writeText(text).then(()=> alert('Resultado copiado para a área de transferência.'));
+      }
+    });
+
+    document.getElementById('btnRestart').addEventListener('click', ()=> {
+      // reset state, UI
+      state.idx = 0;
+      Object.keys(state.scores).forEach(k => state.scores[k]=0);
+      resultView.classList.add('hidden');
+      quizView.classList.remove('hidden');
+      renderQuestion();
+    });
+
+    // small accessibility: close modal on backdrop click
+    hasiModal.addEventListener('click', (e)=> {
+      if (e.target === hasiModal) hasiModal.classList.add('hidden');
+    });
+
+  </script>
+</body>
+</html>

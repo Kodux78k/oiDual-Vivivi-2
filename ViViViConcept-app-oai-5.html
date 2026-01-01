@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ViViVi · DualInfodose — Quiz & Ativações ASCII</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonts + Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            vivivi: {
+              rose: '#ff007f',
+              yellow: '#ffd700',
+              tiffany: '#00f6ff',
+              dark: '#0f0c29',
+              mid: '#302b63'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter','system-ui','sans-serif'],
+            mono: ['JetBrains Mono','monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root{
+      --rose: #ff007f;
+      --tiffany: #00f6ff;
+      --gold: #ffd700;
+      --bg: linear-gradient(180deg,#05040b,#0f0c29 60%);
+      --glass: rgba(255,255,255,0.03);
+      --muted: #9aa0a6;
+    }
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter,system-ui,-apple-system; background:var(--bg); color:#eef6fb;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
+    .card{ background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.16)); border-radius:14px; padding:14px; border:1px solid rgba(255,255,255,0.04); }
+    .glass-btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 14px; border-radius:12px; cursor:pointer; font-weight:700; border:none; }
+    .btn-rose{ background: linear-gradient(90deg,var(--rose),#ff6b9a); color:#021; box-shadow: 0 12px 30px rgba(255,0,127,0.08); }
+    .btn-tiffany{ background: linear-gradient(90deg,var(--tiffany),#89f6ff); color:#023; box-shadow: 0 12px 30px rgba(0,246,255,0.06); }
+    .btn-gold{ background: linear-gradient(90deg,var(--gold),#ffe06a); color:#042; box-shadow: 0 12px 30px rgba(255,215,0,0.06); }
+    .small-muted{ color:var(--muted); font-size:0.88rem; }
+    .chip{ padding:6px 10px; border-radius:999px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04); font-weight:600; font-size:0.82rem }
+
+    /* modal */
+    .backdrop{ position:fixed; inset:0; background:rgba(1,6,12,0.6); display:flex; align-items:center; justify-content:center; z-index:60; }
+    .modal{ width:calc(100% - 36px); max-width:720px; border-radius:12px; padding:16px; background:linear-gradient(180deg,#07121a,#061018); border:1px solid rgba(255,255,255,0.04); }
+    pre.ascii{ font-family: JetBrains Mono, monospace; font-size:13px; line-height:1.18; color:#dff; background:rgba(0,0,0,0.55); padding:12px; border-radius:8px; overflow:auto; max-height:320px; }
+
+    /* loader ring */
+    .loader-ring{ width:56px; height:56px; border-radius:50%; border:5px solid transparent; border-top-color:var(--tiffany); border-right-color:var(--rose); border-bottom-color:var(--gold); animation:spin 1s linear infinite; }
+    @keyframes spin{ to{ transform:rotate(360deg);} }
+
+    /* responsive tweaks */
+    @media (max-width:420px){
+      .card{ padding:12px }
+      .glass-btn{ padding:12px }
+    }
+  </style>
+</head>
+<body>
+  <main class="max-w-3xl mx-auto p-4">
+    <header class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,var(--rose),var(--tiffany)); box-shadow:0 8px 30px rgba(0,0,0,0.5)">
+          <span style="font-weight:800;color:#021">V</span>
+        </div>
+        <div>
+          <div style="font-weight:700">ViViVi · DualInfodose</div>
+          <div class="small-muted">Códex 12 · Arquétipos & Aromas</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="chip">Rose • Tiffany • Gold</span>
+      </div>
+    </header>
+
+    <!-- Landing -->
+    <section id="landing" class="card mb-4 text-center">
+      <div class="mb-4">
+        <div class="inline-block w-28 h-28 rounded-full" style="background:radial-gradient(circle at 30% 30%, rgba(0,246,255,0.15), rgba(255,0,127,0.08)); filter:blur(8px)"></div>
+      </div>
+      <h1 class="text-2xl font-extrabold mb-2">Quiz Místico dos Arquétipos</h1>
+      <p class="small-muted mb-4">Sintonize com a sua essência e receba a ativação ASCII <strong>DualInfodose</strong>.</p>
+
+      <div class="space-y-3">
+        <button id="startBtn" class="glass-btn btn-rose w-full">Iniciar Jornada</button>
+        <button id="studyBtn" class="glass-btn btn-tiffany w-full">Estudar Estrutura</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section id="quizCard" class="card hidden mb-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="small-muted">Pergunta <span id="qIndex">1</span>/<span id="qTotal">6</span></div>
+          <div id="qText" class="font-semibold text-lg">Carregando...</div>
+        </div>
+        <div id="progressWrap" class="text-right">
+          <div class="small-muted">Progresso</div>
+          <div id="progressPct" class="font-semibold">0%</div>
+        </div>
+      </div>
+
+      <div id="options" class="mt-4 space-y-3"></div>
+
+      <div class="mt-4 flex items-center justify-between">
+        <button id="btnPrev" class="glass-btn" style="background:transparent;border:1px solid rgba(255,255,255,0.04)">Anterior</button>
+        <button id="btnSkip" class="glass-btn btn-gold">Pular/Próximo</button>
+      </div>
+    </section>
+
+    <!-- Loading -->
+    <section id="loading" class="card hidden mb-4 text-center">
+      <div class="loader-ring mx-auto mb-3"></div>
+      <div class="small-muted">Ativando Códex DualInfodose...</div>
+    </section>
+
+    <!-- Result -->
+    <section id="result" class="card hidden mb-4">
+      <div class="text-center mb-4">
+        <div class="small-muted">Sua essência primordial</div>
+        <h2 id="resultTitle" class="text-3xl font-extrabold my-2">—</h2>
+        <div class="small-muted">ViViVi Aroma: <span id="resultAroma" class="font-semibold">—</span></div>
+      </div>
+
+      <div class="grid gap-3 mb-4">
+        <div class="card">
+          <div class="small-muted">Essências</div>
+          <div id="resIngredients" class="font-medium">—</div>
+          <div class="small-muted mt-2">Ambientes: <span id="resEnvs">—</span></div>
+        </div>
+
+        <div class="card">
+          <div class="small-muted">Efeitos</div>
+          <div id="resEffects" class="mt-1 small-muted">—</div>
+        </div>
+      </div>
+
+      <!-- CTA block -->
+      <div class="card">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <div class="small-muted">Ativações & Serviços</div>
+            <div class="small-muted">Ative a <strong>DualInfodose ASCII</strong>, converse pelo ChatGPT ou WhatsApp, veja vídeos ou agende uma personalização.</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <button id="openDualAscii" class="glass-btn btn-rose">Ativação DualInfodose (ASCII)</button>
+          <button id="openChatGPT" class="glass-btn btn-tiffany">Abrir ChatGPT</button>
+
+          <button id="openWhats" class="glass-btn btn-tiffany">WhatsApp — Ativar</button>
+          <button id="openVideos" class="glass-btn btn-gold">Vídeos da Dose</button>
+
+          <button id="openSchedule" class="glass-btn btn-gold col-span-2">Agendar Personalização / Limpeza</button>
+        </div>
+
+        <div class="mt-3 small-muted">Dica: clique em "Ativação DualInfodose (ASCII)" para copiar o código e colar no ChatGPT / enviar via WhatsApp.</div>
+      </div>
+
+      <div class="mt-4 flex gap-3">
+        <button id="shareBtn" class="glass-btn" style="background:#0b1220;flex:1">Compartilhar</button>
+        <button id="restartBtn" class="glass-btn btn-gold" style="flex:1">Refazer Quiz</button>
+      </div>
+    </section>
+
+    <footer class="text-center small-muted mt-6">Made with ✨ by Kodux Style — ViViVi DualInfodose</footer>
+  </main>
+
+  <!-- DualInfodose ASCII Modal -->
+  <div id="asciiModal" class="hidden">
+    <div class="backdrop" role="dialog" aria-modal="true">
+      <div class="modal">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div style="font-weight:800">Ativação ASCII — DualInfodose</div>
+            <div class="small-muted" style="font-size:13px">Copie e cole no ChatGPT ou envie por WhatsApp para ativar o assistente DualInfodose.</div>
+          </div>
+          <div class="flex gap-2">
+            <button id="closeAscii" class="chip">Fechar</button>
+          </div>
+        </div>
+
+        <pre id="asciiContent" class="ascii mt-4">// DualInfodose ASCII Activation
+╔════════════════════════════════════════════════════════════════╗
+║  DUALINFODOSE · ATIVAÇÃO ASCII                                  ║
+╠════════════════════════════════════════════════════════════════╣
+║  INSTRUÇÕES:                                                   ║
+║  1) Assuma o papel de "DualInfodose" — assistente ritualístico. ║
+║  2) Faça 3 perguntas para diagnosticar a energia do ambiente.   ║
+║  3) Sugira 3 ações práticas de limpeza/organização (rápidas).   ║
+║  4) Recomende 1 blend ViViVi (ingredientes e proporção base).   ║
+║  5) Termine com um ritual de ancoragem (15s) e um CTA de agendamento.║
+╠════════════════════════════════════════════════════════════════╣
+║  CONTEXTO:                                                      ║
+║  Usuário concluiu o Quiz dos Arquétipos — enviar aroma + roteiro.║
+╚════════════════════════════════════════════════════════════════╝
+</pre>
+
+        <div class="mt-4 flex gap-3">
+          <button id="copyAscii" class="glass-btn btn-rose">Copiar ASCII</button>
+          <button id="sendToChat" class="glass-btn btn-tiffany">Abrir ChatGPT</button>
+          <button id="sendToWhats" class="glass-btn btn-tiffany">Abrir WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /***********************
+     * CONFIG - personalize
+     ***********************/
+    const LINKS = {
+      CHATGPT: 'https://chat.openai.com',                       // ChatGPT
+      WHATSAPP_PHONE: '',                                       // ex: '5511999999999' (sem +) - leave empty to open generic
+      WHATSAPP_TEXT: 'Olá! Quero ativar a Ativação ASCII DualInfodose para meu espaço ViViVi. Por favor, oriente-me.',
+      VIDEOS_URL: 'https://youtube.com',                        // troca para playlist real
+      CALENDLY_URL: ''                                          // ex: 'https://calendly.com/seu-usuario/personalizacao'
+    };
+    /************************/
+
+    // Data: archetypes -> aromas (compact)
+    const AROMAS = {
+      innocent: { name:"Aroma da Paz", ingredients:"Lavanda, camomila, capim-limão", envs:"Quartos, meditação", effects:"Serenidade e empatia" },
+      explorer: { name:"Aroma dos Novos Caminhos", ingredients:"Cedro, eucalipto, pimenta rosa", envs:"Varandas, halls", effects:"Coragem e liberdade" },
+      sage: { name:"Aroma da Mente", ingredients:"Sândalo, alecrim, incenso", envs:"Estudos, biblioteca", effects:"Foco e clareza" },
+      hero: { name:"Aroma do Triunfo", ingredients:"Limão siciliano, gengibre, alecrim", envs:"Home office, academia", effects:"Energia e confiança" },
+      caregiver: { name:"Aroma do Lar", ingredients:"Baunilha, rosa, camomila", envs:"Cozinhas, salas", effects:"Acolhimento e cuidado" },
+      rebel: { name:"Aroma da Revolução", ingredients:"Pimenta preta, cravo, cardamomo", envs:"Áreas de lazer", effects:"Ousadia e autenticidade" },
+      lover: { name:"Aroma do Desejo", ingredients:"Jasmim, rosa damascena, âmbar", envs:"Quartos-românticos", effects:"Sensualidade e magnetismo" },
+      creator: { name:"Aroma da Criação", ingredients:"Laranja doce, ylang-ylang, gerânio", envs:"Ateliês", effects:"Criatividade e inspiração" },
+      jester: { name:"Aroma da Alegria", ingredients:"Tangerina, hortelã, melissa", envs:"Salas de jogos", effects:"Leveza e humor" },
+      magician: { name:"Aroma da Prosperidade", ingredients:"Canela, patchouli, laranja amarga", envs:"Cantinhos de prosperidade", effects:"Manifestação e transformação" },
+      ruler: { name:"Aroma do Poder", ingredients:"Vetiver, jasmim, cedro", envs:"Salas de reunião", effects:"Liderança e presença" },
+      orphan: { name:"Aroma das Raízes", ingredients:"Lavanda, manjericão, cipreste", envs:"Salas de estar", effects:"Segurança e pertencimento" }
+    };
+
+    // Quiz questions
+    const QUESTIONS = [
+      { q:"O que você mais busca sentir no dia a dia?", opts:[
+        { t:['innocent','orphan','caregiver'], txt:"Paz, segurança e harmonia" },
+        { t:['ruler','hero','magician'], txt:"Poder, conquista e reconhecimento" },
+        { t:['explorer','jester','rebel'], txt:"Liberdade, novidade e diversão" },
+        { t:['lover','creator','sage'], txt:"Conexão, criação e sabedoria" }
+      ]},
+      { q:"Diante de um desafio, você:", opts:[
+        { t:['hero','ruler'], txt:"Enfrenta e resolve" },
+        { t:['creator','magician'], txt:"Inova e transforma" },
+        { t:['sage','explorer'], txt:"Analisa e adapta" },
+        { t:['orphan','caregiver'], txt:"Procura apoio e cuida" }
+      ]},
+      { q:"Seu superpoder é:", opts:[
+        { t:['lover','rebel'], txt:"Paixão / Intensidade" },
+        { t:['ruler','innocent'], txt:"Ordem / Estrutura" },
+        { t:['jester','explorer'], txt:"Alegria / Espontaneidade" },
+        { t:['magician','sage'], txt:"Visão / Transformação" }
+      ]},
+      { q:"Como define prosperidade?", opts:[
+        { t:['explorer','rebel'], txt:"Liberdade para explorar" },
+        { t:['orphan','caregiver','ruler'], txt:"Segurança para os meus" },
+        { t:['creator','magician','hero'], txt:"Realização e criação" },
+        { t:['jester','innocent','lover'], txt:"Momentos felizes" }
+      ]},
+      { q:"Escolha um elemento para sintonizar:", opts:[
+        { t:['hero','magician','rebel'], txt:"Fogo — Ação e transformação" },
+        { t:['caregiver','creator','orphan'], txt:"Terra — Base e criação" },
+        { t:['sage','explorer','jester'], txt:"Ar — Ideias e liberdade" },
+        { t:['lover','innocent','ruler'], txt:"Água — Emoção e conexão" }
+      ]},
+      { q:"Quando precisa de foco, você:", opts:[
+        { t:['sage','hero'], txt:"Cria ritual e rotina" },
+        { t:['creator','jester'], txt:"Muda o ambiente pra inspirar" },
+        { t:['caregiver','orphan'], txt:"Organiza para sentir segurança" },
+        { t:['rebel','explorer'], txt:"Busca novidade pra estimular" }
+      ]}
+    ];
+
+    // state
+    let state = { idx:0, scores: {} };
+    Object.keys(AROMAS).forEach(k=>state.scores[k]=0);
+
+    // UI refs
+    const startBtn = document.getElementById('startBtn');
+    const studyBtn = document.getElementById('studyBtn');
+    const landing = document.getElementById('landing');
+    const quizCard = document.getElementById('quizCard');
+    const optionsWrap = document.getElementById('options');
+    const qIndex = document.getElementById('qIndex');
+    const qTotal = document.getElementById('qTotal');
+    const qText = document.getElementById('qText');
+    const progressPct = document.getElementById('progressPct');
+    const loading = document.getElementById('loading');
+    const result = document.getElementById('result');
+
+    const resultTitle = document.getElementById('resultTitle');
+    const resultAroma = document.getElementById('resultAroma');
+    const resIngredients = document.getElementById('resIngredients');
+    const resEnvs = document.getElementById('resEnvs');
+    const resEffects = document.getElementById('resEffects');
+
+    const openAsciiBtn = document.getElementById('openDualAscii');
+    const openChatBtn = document.getElementById('openChatGPT');
+    const openWhatsBtn = document.getElementById('openWhats');
+    const openVideosBtn = document.getElementById('openVideos');
+    const openScheduleBtn = document.getElementById('openSchedule');
+
+    const asciiModal = document.getElementById('asciiModal');
+    const asciiContent = document.getElementById('asciiContent');
+    const copyAsciiBtn = document.getElementById('copyAscii');
+    const sendToChatBtn = document.getElementById('sendToChat');
+    const sendToWhatsBtn = document.getElementById('sendToWhats');
+    const closeAscii = document.getElementById('closeAscii');
+
+    const shareBtn = document.getElementById('shareBtn');
+    const restartBtn = document.getElementById('restartBtn');
+
+    // init
+    qTotal.textContent = QUESTIONS.length;
+
+    startBtn.addEventListener('click', ()=> {
+      landing.classList.add('hidden');
+      quizCard.classList.remove('hidden');
+      state.idx = 0;
+      Object.keys(state.scores).forEach(k=>state.scores[k]=0);
+      renderQuestion();
+    });
+
+    studyBtn.addEventListener('click', ()=> {
+      const studyText = `Estrutura: 12 arquétipos, 12 aromas ViViVi, ativação ASCII DualInfodose.`;
+      alert(studyText);
+    });
+
+    function renderQuestion(){
+      const q = QUESTIONS[state.idx];
+      qIndex.textContent = state.idx + 1;
+      qText.textContent = q.q;
+      progressPct.textContent = `${Math.round((state.idx / QUESTIONS.length) * 100)}%`;
+      optionsWrap.innerHTML = '';
+      q.opts.forEach(opt => {
+        const b = document.createElement('button');
+        b.className = 'card w-full text-left';
+        b.style.cursor = 'pointer';
+        b.style.border = '1px solid rgba(255,255,255,0.03)';
+        b.style.padding = '12px';
+        b.innerHTML = `<div style="font-weight:700">${opt.txt}</div>`;
+        b.onclick = ()=> {
+          opt.t.forEach(t => {
+            // map t values (some are multiple words)
+            // If t is archetype key present in AROMAS use it; else try to map
+            // We'll increment matched archetypes in state.scores if present, else try a fallback mapping
+            if(state.scores[t] !== undefined) state.scores[t]++;
+            else {
+              // fallback: try find first archetype that contains substring
+              for(const k of Object.keys(state.scores)){
+                if(k.includes(t)) { state.scores[k]++; break; }
+              }
+            }
+          });
+          state.idx++;
+          if(state.idx < QUESTIONS.length) renderQuestion();
+          else finishQuiz();
+        };
+        optionsWrap.appendChild(b);
+      });
+    }
+
+    function finishQuiz(){
+      quizCard.classList.add('hidden');
+      loading.classList.remove('hidden');
+
+      // compute winner (simple top score)
+      setTimeout(()=> {
+        // reduce scores: find highest key
+        let winner = Object.keys(state.scores).reduce((a,b)=> state.scores[a] >= state.scores[b] ? a : b);
+        // show result
+        showResult(winner);
+      }, 1200);
+    }
+
+    function showResult(key){
+      loading.classList.add('hidden');
+      result.classList.remove('hidden');
+
+      // map winner key to a known aroma profile — if key not in AROMAS use default hero
+      const aroma = AROMAS[key] || AROMAS.hero;
+      const archName = key ? (key[0].toUpperCase()+key.slice(1)) : 'Sintonizado';
+
+      resultTitle.textContent = `O ${archName}`;
+      resultAroma.textContent = aroma.name;
+      resIngredients.textContent = aroma.ingredients;
+      resEnvs.textContent = aroma.envs;
+      resEffects.textContent = aroma.effects;
+
+      // store last result (optional)
+      try { localStorage.setItem('vi_last_result', JSON.stringify({ archetype: archName, aroma: aroma.name, ts: Date.now() })); } catch(e){}
+    }
+
+    // CTA handlers
+    openAsciiBtn.addEventListener('click', ()=> {
+      asciiModal.classList.remove('hidden');
+    });
+    closeAscii.addEventListener('click', ()=> asciiModal.classList.add('hidden'));
+
+    // ASCII prompt (DualInfodose) - you can update wording here
+    const ASCII_PROMPT = `╔════════════════════════════════════════════════╗
+║           DUALINFODOSE · ATIVAÇÃO ASCII         ║
+╠════════════════════════════════════════════════╣
+║ PAPEL: Atue como "DualInfodose" — assistente    ║
+║ ritualístico: respostas diretas, práticas e com ║
+║ foco em limpeza energética, organização e aroma.║
+║                                                ║
+║ FLUXO:                                         ║
+║ 1) Faça 3 perguntas rápidas sobre o ambiente.  ║
+║ 2) Indique 3 ações práticas de limpeza/ordem.  ║
+║ 3) Sugira 1 blend ViViVi (ingredientes + proporção base). ║
+║ 4) Forneça um mini-ritual de 15s para ancoragem.║
+║ 5) Termine com CTA para agendar personalização. ║
+╚════════════════════════════════════════════════╝
+Context: Usuário concluiu o Quiz dos Arquétipos — envie aroma, ambiente ideal e roteiro prático.`;
+
+    document.getElementById('asciiContent').innerText = ASCII_PROMPT;
+
+    copyAsciiBtn.addEventListener('click', async ()=> {
+      try {
+        await navigator.clipboard.writeText(ASCII_PROMPT);
+        copyAsciiBtn.innerText = 'Copiado ✓';
+        setTimeout(()=> copyAsciiBtn.innerText = 'Copiar ASCII', 1500);
+      } catch(e){ alert('Não foi possível copiar automaticamente — selecione e copie manualmente.'); }
+    });
+
+    sendToChatBtn.addEventListener('click', ()=> {
+      window.open(LINKS.CHATGPT, '_blank', 'noopener');
+    });
+
+    sendToWhatsBtn.addEventListener('click', ()=> {
+      const text = encodeURIComponent(ASCII_PROMPT + '\n\n' + LINKS.WHATSAPP_TEXT);
+      if(LINKS.WHATSAPP_PHONE && LINKS.WHATSAPP_PHONE.length>3){
+        window.open(`https://api.whatsapp.com/send?phone=${LINKS.WHATSAPP_PHONE}&text=${text}`, '_blank', 'noopener');
+      } else {
+        window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank', 'noopener');
+      }
+    });
+
+    openChatBtn.addEventListener('click', ()=> window.open(LINKS.CHATGPT, '_blank', 'noopener'));
+    openWhatsBtn.addEventListener('click', ()=> {
+      const t = encodeURIComponent(LINKS.WHATSAPP_TEXT);
+      if(LINKS.WHATSAPP_PHONE && LINKS.WHATSAPP_PHONE.length>3) window.open(`https://api.whatsapp.com/send?phone=${LINKS.WHATSAPP_PHONE}&text=${t}`, '_blank', 'noopener');
+      else window.open(`https://api.whatsapp.com/send?text=${t}`, '_blank', 'noopener');
+    });
+    openVideosBtn.addEventListener('click', ()=> window.open(LINKS.VIDEOS_URL, '_blank', 'noopener'));
+    openScheduleBtn.addEventListener('click', ()=> {
+      if(LINKS.CALENDLY_URL && LINKS.CALENDLY_URL.length>5) window.open(LINKS.CALENDLY_URL, '_blank', 'noopener');
+      else window.location.href = `mailto:contato@vivivi.example?subject=${encodeURIComponent('Agendamento - Personalização ViViVi')}&body=${encodeURIComponent('Olá, gostaria de agendar personalização/limpeza do meu espaço ViViVi. Meus horários:')}`;
+    });
+
+    shareBtn.addEventListener('click', async ()=> {
+      const title = resultTitle.innerText;
+      const aroma = resultAroma.innerText;
+      const text = `Meu arquétipo ViViVi: ${title} — Aroma: ${aroma}. Confira o Quiz DualInfodose.`;
+      if(navigator.share){
+        try{ await navigator.share({ title:'Meu Arquétipo ViViVi', text, url:window.location.href }); }
+        catch(e){}
+      } else {
+        navigator.clipboard.writeText(text).then(()=> alert('Resultado copiado para a área de transferência.'));
+      }
+    });
+
+    restartBtn.addEventListener('click', ()=> location.reload());
+
+    // small accessibility: close modal on backdrop click
+    asciiModal.addEventListener('click', (e)=> { if(e.target === asciiModal) asciiModal.classList.add('hidden'); });
+
+    // On load: attempt to load last result summary
+    window.addEventListener('load', ()=>{
+      try {
+        const last = JSON.parse(localStorage.getItem('vi_last_result') || 'null');
+        if(last){
+          // show tiny toast
+          console.log('Último resultado:', last);
+        }
+      } catch(e){}
+    });
+  </script>
+</body>
+</html>
